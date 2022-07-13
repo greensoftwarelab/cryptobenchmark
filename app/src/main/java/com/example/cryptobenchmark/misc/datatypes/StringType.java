@@ -23,7 +23,9 @@ public class StringType implements DataType{
         SecureRandom rnd = new SecureRandom();
         byte[] token = new byte[size];
         rnd.nextBytes(token);
-        return new StringType(byteArrayToString(token));
+        return new StringType(byteArrayToString(token).substring(0, size));
+        //System.out.println(token.length);
+        //return new StringType(byteArrayToString(token));
     }
 
     public static DataType genPseudoRandomWithSize(int size, int seed){
@@ -31,7 +33,7 @@ public class StringType implements DataType{
         rnd.setSeed(seed);
         byte[] token = new byte[size];
         rnd.nextBytes(token);
-        return new StringType(byteArrayToString(token));
+        return new StringType(byteArrayToString(token).substring(0, size));
     }
 
     public static DataType[] genRandomWithSize(int size, int count){

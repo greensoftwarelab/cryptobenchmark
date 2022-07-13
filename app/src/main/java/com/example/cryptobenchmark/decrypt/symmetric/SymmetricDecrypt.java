@@ -43,16 +43,18 @@ public class SymmetricDecrypt {
                         "Empty"
                 ));
         // AES no padding
-        this.decrypt_providers.put( "AES/CBC/NoPadding", new HashSet<>(Arrays.asList("AndroidKeyStoreBCWorkaround", "AndroidOpenSSL", "Empty")));
-        this.decrypt_providers.put( "AES/CTR/NoPadding", new HashSet<>(Arrays.asList("AndroidKeyStoreBCWorkaround", "AndroidOpenSSL", "Empty")));
-        this.decrypt_providers.put( "AES/ECB/NoPadding", new HashSet<>(Arrays.asList("AndroidKeyStoreBCWorkaround", "AndroidOpenSSL", "Empty")));
-        this.decrypt_providers.put( "AES/GCM/NoPadding", new HashSet<>(Arrays.asList("AndroidKeyStoreBCWorkaround", "AndroidOpenSSL", "Empty")));
+        //this.decrypt_providers.put( "AES/CBC/NoPadding", new HashSet<>(Arrays.asList("AndroidKeyStoreBCWorkaround", "AndroidOpenSSL")));
+        this.decrypt_providers.put( "AES/CTR/NoPadding", new HashSet<>(Arrays.asList("AndroidKeyStoreBCWorkaround", "AndroidOpenSSL")));
+        //this.decrypt_providers.put( "AES/ECB/NoPadding", new HashSet<>(Arrays.asList("AndroidKeyStoreBCWorkaround", "AndroidOpenSSL")));
+        this.decrypt_providers.put( "AES/GCM/NoPadding", new HashSet<>(Arrays.asList("AndroidKeyStoreBCWorkaround", "AndroidOpenSSL")));
+        /*
         // AES PKCS5Padding
-        this.decrypt_providers.put( "AES/CBC/PKCS5Padding", new HashSet<>(Arrays.asList("AndroidOpenSSL", "Empty")));
-        this.decrypt_providers.put( "AES/ECB/PKCS5Padding", new HashSet<>(Arrays.asList("AndroidOpenSSL", "Empty")));
+         */
+        this.decrypt_providers.put( "AES/CBC/PKCS5Padding", new HashSet<>(Arrays.asList("AndroidOpenSSL")));
+        this.decrypt_providers.put( "AES/ECB/PKCS5Padding", new HashSet<>(Arrays.asList("AndroidOpenSSL")));
         // AES PKCS7Padding
-        this.decrypt_providers.put( "AES/CBC/PKCS7Padding", new HashSet<>(Arrays.asList("AndroidKeyStoreBCWorkaround" , "Empty")));
-        this.decrypt_providers.put( "AES/ECB/PKCS7Padding", new HashSet<>(Arrays.asList("AndroidKeyStoreBCWorkaround", "Empty")));
+        this.decrypt_providers.put( "AES/CBC/PKCS7Padding", new HashSet<>(Arrays.asList("AndroidKeyStoreBCWorkaround")));
+        //this.decrypt_providers.put( "AES/ECB/PKCS7Padding", new HashSet<>(Arrays.asList("AndroidKeyStoreBCWorkaround")));
     }
 
     public List<String> get_supported_algorithm_modes(String algo){
@@ -96,7 +98,6 @@ public class SymmetricDecrypt {
         return x;
     }
 
-
     public static String decrypt_AES(String message, String mode, String padding, SecretKey key, String provider, IvParameterSpec iv){
         Cipher cipher = null;
         try {
@@ -105,6 +106,32 @@ public class SymmetricDecrypt {
             byte[] plainText = cipher.doFinal(StringToByteArray(message));
             return new String(plainText);
         } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidAlgorithmParameterException | InvalidKeyException | NoSuchProviderException | IllegalBlockSizeException | BadPaddingException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public static String decrypt_BLOWFISH(String message, String mode, String padding, SecretKey key, String provider, IvParameterSpec iv){
+        Cipher cipher = null;
+        try {
+            cipher = Cipher.getInstance("BLOWFISH", provider);
+            cipher.init(Cipher.DECRYPT_MODE, key, iv);
+            byte[] plainText = cipher.doFinal(StringToByteArray(message));
+            return new String(plainText);
+        } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidAlgorithmParameterException | InvalidKeyException | NoSuchProviderException | IllegalBlockSizeException | BadPaddingException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+    public static String decrypt_ARC4(String message, String mode, String padding, SecretKey key, String provider, IvParameterSpec iv){
+        Cipher cipher = null;
+        try {
+            cipher = Cipher.getInstance("ARC4", provider);
+            cipher.init(Cipher.DECRYPT_MODE, key);
+            //cipher.init(Cipher.DECRYPT_MODE, key, iv);
+            byte[] plainText = cipher.doFinal(StringToByteArray(message));
+            return new String(plainText);
+        } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | NoSuchProviderException | IllegalBlockSizeException | BadPaddingException e) {
             e.printStackTrace();
         }
         return null;

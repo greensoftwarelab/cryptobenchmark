@@ -2,8 +2,16 @@ package com.example.cryptobenchmark.misc;
 
 
 
-import android.security.keystore.KeyProperties;
 
+import android.app.Application;
+import android.content.Context;
+
+import org.json.JSONObject;
+
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
 import java.math.BigInteger;
 import java.security.MessageDigest;
@@ -55,7 +63,8 @@ public class Utils {
     }
 
     public static String byteArrayToString(byte[] cyphertext){
-      return Base64.getEncoder().encodeToString(cyphertext);
+        // return Base64.getUrlEncoder().withoutPadding().encodeToString(cyphertext);
+        return Base64.getEncoder().encodeToString(cyphertext);
     }
 
     public static byte[] StringToByteArray(String cyphertext){
@@ -78,6 +87,7 @@ public class Utils {
         }
         return method;
     }
+
     public static byte[] intToByteArray(int data) {
         byte[] result = new byte[4];
         result[0] = (byte) ((data & 0xFF000000) >> 24);
@@ -85,6 +95,15 @@ public class Utils {
         result[2] = (byte) ((data & 0x0000FF00) >> 8);
         result[3] = (byte) ((data & 0x000000FF) >> 0);
         return result;
+    }
+
+    private static Application getApplicationUsingReflection() throws Exception {
+        return (Application) Class.forName("android.app.ActivityThread")
+                .getMethod("currentApplication").invoke(null, (Object[]) null);
+    }
+
+    public JSONObject loadJSONFromFile(String filename) {
+        return new JSONObject();
     }
 
 }

@@ -1,0 +1,41 @@
+{
+  "device": "Pixel3a",
+  "providers": {
+      "AndroidKeyStore": {
+        "algorithms": {
+          "AES": {
+            "type": "symmetric",
+            "modes": {
+              "CBC": {
+                "paddings": [
+                  "NoPadding"
+                ]
+              }
+            },
+            "key_sizes": [
+              128,
+              256
+            ]
+          }
+        }
+      },
+    "AndroidOpenSSL": {
+      "algorithms": {
+        "AES": {
+          "type": "symmetric",
+          "modes": {
+            "CBC": {
+              "paddings": [
+                "NoPadding"
+              ]
+            }
+          },
+          "key_sizes": [
+            128,
+            256
+          ]
+        }
+      }
+    }
+  }
+}

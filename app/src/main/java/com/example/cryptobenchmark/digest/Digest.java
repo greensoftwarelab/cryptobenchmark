@@ -1,5 +1,9 @@
 package com.example.cryptobenchmark.digest;
 
+import com.example.cryptobenchmark.misc.CryptoPrimitive;
+import com.example.cryptobenchmark.misc.CryptoProvider;
+import com.example.cryptobenchmark.misc.DeviceCryptoPrimitives;
+
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.security.MessageDigest;
@@ -7,9 +11,13 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static com.example.cryptobenchmark.misc.Utils.StringToByteArray;
 import static com.example.cryptobenchmark.misc.Utils.byteArrayToString;
@@ -17,9 +25,38 @@ import static com.example.cryptobenchmark.misc.Utils.getMethod;
 
 public class Digest {
 
-    Map<String, List<String>> digests_providers = new HashMap<>();
+    Map<String, Set<String>> digestsProviders = new HashMap<>();
+    private static Set<String> digestAlgorithms = new HashSet<>(Arrays.asList(
+            "MD5", "SHA1", "SHA224", "SHA226", "SHA256", "SHA384", "SHA512",
+            "SHA-1", "SHA-224", "SHA-226", "SHA-256", "SHA-384", "SHA-512"
+    ));
+    private static Set<String> excludedProviders = new HashSet<>(Arrays.asList("BC"));
 
 
+    public Digest(DeviceCryptoPrimitives dcp){
+        for (CryptoProvider cp : dcp.getDeviceProviders().values()){
+            for (String algoId : digestAlgorithms){
+                List<String> matchingPrimitives =  cp.getProviderPrimitives().values().stream().filter(x -> x.getSimpleName().matches(""+algoId+".*")).map(CryptoPrimitive::getPrimitiveName).collect(Collectors.toList());
+                for (String s : matchingPrimitives){
+                    addPrimitive(s, cp.getProviderName());
+                }
+            }
+        }
+    }
+
+    public void addPrimitive(String primitiveName, String primitiveProvider){
+        if (excludedProviders.contains(primitiveProvider)){
+            return;
+        }
+        if(this.digestsProviders.containsKey(primitiveName)){
+            this.digestsProviders.get(primitiveName).add(primitiveProvider);
+        }
+        else{
+            this.digestsProviders.put(primitiveName, new HashSet<>(Collections.singletonList(primitiveProvider)));
+        }
+    }
+
+    /*
     public Digest(){
         List<String> basicTriple = new ArrayList<>(
                 Arrays.asList(
@@ -27,6 +64,7 @@ public class Digest {
                         "AndroidOpenSSL",
                         "Empty"
                 ));
+
         this.digests_providers.put( "MD5", basicTriple);
         this.digests_providers.put( "SHA1", basicTriple);
         this.digests_providers.put( "SHA224", basicTriple);
@@ -34,16 +72,16 @@ public class Digest {
         this.digests_providers.put( "SHA256", basicTriple);
         this.digests_providers.put( "SHA384", basicTriple);
         this.digests_providers.put( "SHA512", basicTriple);
-    }
+    }*/
 
     /*
     *  -------------------- MD5 --------------------
      * */
     public List<String> digest_all(String msg, String algorithm){
-        if( ! this.digests_providers.containsKey(algorithm) ){
+        if( ! this.digestsProviders.containsKey(algorithm) ){
             return null;
         }
-        List<String> md5_providers = this.digests_providers.get(algorithm);
+        Set<String> md5_providers = this.digestsProviders.get(algorithm);
         List<String> x = new ArrayList<>();
         for(String provider : md5_providers){
             Method method = getMethod(this.getClass().getName(), String.format("digest_%s", algorithm),  new Class[]{ String.class, String.class});
