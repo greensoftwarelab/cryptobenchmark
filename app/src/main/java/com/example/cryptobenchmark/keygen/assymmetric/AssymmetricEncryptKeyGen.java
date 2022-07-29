@@ -4,10 +4,12 @@ import android.security.keystore.KeyGenParameterSpec;
 import android.security.keystore.KeyProperties;
 
 import java.security.InvalidAlgorithmParameterException;
+import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
+import java.security.SecureRandom;
 
 public class AssymmetricEncryptKeyGen {
 
@@ -70,4 +72,23 @@ public class AssymmetricEncryptKeyGen {
         //Generates the key pair
         return keyPairGenerator.genKeyPair();
     }
+
+    public static KeyPair gen_key_EC(int keylen, String algo){
+        KeyPairGenerator keyGen = null;
+        try {
+            keyGen = KeyPairGenerator.getInstance("EC");
+            //SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
+            //keyGen.initialize(256, random);
+            keyGen.initialize(keylen);
+            KeyFactory kaif = KeyFactory.getInstance("EC");
+            KeyPair kp = keyGen.generateKeyPair();
+            return kp;
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+       return null;
+    }
+
+
+
 }
