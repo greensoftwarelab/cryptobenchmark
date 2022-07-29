@@ -7,6 +7,7 @@ import org.json.JSONObject;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Optional;
 
 public class CryptoProvider{
 
@@ -37,6 +38,17 @@ public class CryptoProvider{
     public void addPrimitive(String id , CryptoPrimitive cp) {
        this.providerPrimitives.put(id, cp);
     }
+
+    public void removePrimitive(String primitiveName) {
+        this.providerPrimitives.remove(primitiveName);
+    }
+
+
+    public CryptoPrimitive getFirstImplementedPrimitive(String primitiveName){
+        Optional<CryptoPrimitive> opt = this.getProviderPrimitives().values().stream().filter(x-> x.getPrimitiveName().startsWith(primitiveName)).findAny();
+        return opt.orElse(null);
+    }
+
 
     public void loadFromJsonObject(JSONObject jo) throws JSONException {
         for (Iterator<String> it = jo.getJSONObject("algorithms").keys(); it.hasNext(); ) {

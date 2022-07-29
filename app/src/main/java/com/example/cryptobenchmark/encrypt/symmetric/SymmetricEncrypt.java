@@ -5,6 +5,7 @@ import com.example.cryptobenchmark.misc.CryptoPrimitive;
 import com.example.cryptobenchmark.misc.CryptoProvider;
 import com.example.cryptobenchmark.misc.DeviceCryptoPrimitives;
 import com.example.cryptobenchmark.misc.datatypes.StringType;
+import com.hunter.library.debug.HunterDebug;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -31,6 +32,10 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
+
+import static com.example.cryptobenchmark.keygen.symmetric.SymmetricKeyGen.gen_key;
+import static com.example.cryptobenchmark.keygen.symmetric.SymmetricKeyGen.gen_key_AES;
+import static com.example.cryptobenchmark.keygen.symmetric.SymmetricKeyGen.gen_key_AES_AndroidKeyStore;
 import static com.example.cryptobenchmark.misc.Utils.byteArrayToString;
 import static com.example.cryptobenchmark.misc.Utils.getMethod;
 
@@ -41,6 +46,12 @@ public class SymmetricEncrypt {
     private static Set<String> symmetric_primitives = new HashSet<>(
             Arrays.asList("AES", "DES", "BLOWFISH", "ARC4")
     );
+
+    private static Set<String> excluded_symmetric_primitives = new HashSet<>(
+            Arrays.asList("AESWRAP_128")
+    );
+
+
 
     public SymmetricEncrypt(DeviceCryptoPrimitives dcp){
         for (CryptoProvider cp : dcp.getDeviceProviders().values()){
@@ -54,6 +65,9 @@ public class SymmetricEncrypt {
     }
 
     public void addPrimitive(String primitiveName, String primitiveProvider){
+        if(excluded_symmetric_primitives.contains(primitiveName)){
+            return;
+        }
         if(this.encrypt_providers.containsKey(primitiveName)){
             this.encrypt_providers.get(primitiveName).add(primitiveProvider);
         }
@@ -214,20 +228,18 @@ public class SymmetricEncrypt {
     }
 
     public static Map.Entry<String, IvParameterSpec> encrypt_AES(String message, String mode, String padding, SecretKey key, String provider) {
-        if (provider.equals("Empty")) {
-            return new AbstractMap.SimpleEntry<>(message, new IvParameterSpec(new byte[]{}));
-        }
         Cipher cipher = null;
         byte[] ciphertext = null;
         try {
-            cipher = Cipher.getInstance(String.format("AES/%s/%s", mode, padding), provider);
+            String transformation = mode.equals("") || padding.equals("") ? "AES" : String.format("AES/%s/%s", mode, padding);
+            cipher = Cipher.getInstance(transformation, provider);
             cipher.init(Cipher.ENCRYPT_MODE, key);
             ciphertext = cipher.doFinal(message.getBytes());
         } catch (NoSuchProviderException | NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | IllegalBlockSizeException | BadPaddingException e) {
             e.printStackTrace();
             return null;
         }
-        return new AbstractMap.SimpleEntry<>(byteArrayToString(ciphertext), new IvParameterSpec(cipher.getIV()));
+        return new AbstractMap.SimpleEntry<>(byteArrayToString(ciphertext), cipher.getIV() != null ? new IvParameterSpec(cipher.getIV()) :  new IvParameterSpec(new byte[]{}));
     }
 
     /*
@@ -242,6 +254,37 @@ public class SymmetricEncrypt {
         byte[] ciphertext = null;
         try {
             cipher = Cipher.getInstance(String.format("DES/%s/%s", mode, padding), provider);
+            if (!mode.equals("ECB")) {
+                byte[] iv = new byte[8];
+                IvParameterSpec ips = new IvParameterSpec(iv);
+                //desCipher.init(Cipher.ENCRYPT_MODE, key, ips);
+                cipher.init(Cipher.ENCRYPT_MODE, key, ips);
+                ciphertext = cipher.doFinal(message.getBytes());
+                return new AbstractMap.SimpleEntry<>(byteArrayToString(ciphertext), new IvParameterSpec(cipher.getIV()));
+            } else {
+                cipher.init(Cipher.ENCRYPT_MODE, key);
+                ciphertext = cipher.doFinal(message.getBytes());
+                return new AbstractMap.SimpleEntry<>(byteArrayToString(ciphertext), new IvParameterSpec(new byte[]{}));
+            }
+
+        } catch (NoSuchProviderException | InvalidAlgorithmParameterException | NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | IllegalBlockSizeException | BadPaddingException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    /*
+     *  3DES
+     *   requires key of 8 bytes (64 bits)
+     * */
+    public static Map.Entry<String, IvParameterSpec> encrypt_3DES(String message, String mode, String padding, SecretKey key, String provider) {
+        if (provider.equals("Empty")) {
+            return new AbstractMap.SimpleEntry<>(message, new IvParameterSpec(new byte[]{}));
+        }
+        Cipher cipher = null;
+        byte[] ciphertext = null;
+        try {
+            cipher = Cipher.getInstance(String.format("DESEDE/%s/%s", mode, padding), provider);
             if (!mode.equals("ECB")) {
                 byte[] iv = new byte[8];
                 IvParameterSpec ips = new IvParameterSpec(iv);
@@ -303,4 +346,96 @@ public class SymmetricEncrypt {
         }
     }
 
+    public  Map.Entry<String, IvParameterSpec> encrypt(String plaintext, SecretKey key,String algo, String provider){
+        Cipher cipher = null;
+        byte[] ciphertext = null;
+        try {
+            cipher = Cipher.getInstance(algo, provider);
+            cipher.init(Cipher.ENCRYPT_MODE, key);
+            ciphertext = cipher.doFinal(plaintext.getBytes());
+            return new AbstractMap.SimpleEntry<>(byteArrayToString(ciphertext), new IvParameterSpec(new byte[]{}));
+        } catch (NoSuchProviderException | NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | IllegalBlockSizeException | UnsupportedOperationException | BadPaddingException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+    public Map<String, IvParameterSpec>  encryptWithAll(String plaintext){
+        Map<String, IvParameterSpec> x = new LinkedHashMap<>();
+        for(String algorithm : this.encrypt_providers.keySet()) {
+            for(String provider : this.encrypt_providers.get(algorithm)){
+                System.out.println(algorithm);
+                try{
+                    SecretKey sk = gen_key_AES(128, "", "", provider);
+                    Map.Entry<String, IvParameterSpec> res = encrypt(plaintext, sk, algorithm, provider);
+                    x.put(res.getKey(), res.getValue());
+                }
+                catch(Exception e){
+                    e.printStackTrace();
+                }
+
+            }
+        }
+        return x;
+    }
+
+    // ChaCha20-Poly1305 is almost 3 times faster than AES when the CPU does not provide dedicated AES instructions. Intel processors provide AES-NI instruction set [1]
+    // ChaCha20 is not vulnerable to cache-collision timing attacks unlike AES [1]
+    public static Map.Entry<String, IvParameterSpec> encrypt_ChaCha20(String msg, SecretKey key){
+        /* if (input.length == 0) {
+            throw new IllegalArgumentException("Length of message cannot be 0");
+        }
+        if (key.getEncoded().length * 8 != KEY_LEN) {
+            throw new IllegalArgumentException("Size of key must be 256 bits");
+        }
+        */
+        //Cipher cipher = Cipher.getInstance("ChaCha20-Poly1305/None/NoPadding");
+
+        int NONCE_LEN = 12;
+        byte[] nonce = new byte[12]; // getNonce(); avoid
+        IvParameterSpec ivParameterSpec = new IvParameterSpec(nonce);
+        try{
+            Cipher cipher = Cipher.getInstance("ChaCha20");
+            cipher.init(Cipher.ENCRYPT_MODE, key, ivParameterSpec);
+            byte[] messageCipher = cipher.doFinal(msg.getBytes());
+            // Prepend the nonce with the message cipher
+            byte[] cipherText = new byte[messageCipher.length + NONCE_LEN];
+            System.arraycopy(nonce, 0, cipherText, 0, NONCE_LEN);
+            System.arraycopy(messageCipher, 0, cipherText, NONCE_LEN,
+                    messageCipher.length);
+            return new AbstractMap.SimpleEntry<>(byteArrayToString(cipherText), ivParameterSpec);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return null;
+
+    }
+    public static Map.Entry<String, IvParameterSpec> encrypt_ChaCha20Poly(String msg, SecretKey key){
+        /* if (input.length == 0) {
+            throw new IllegalArgumentException("Length of message cannot be 0");
+        }
+        if (key.getEncoded().length * 8 != KEY_LEN) {
+            throw new IllegalArgumentException("Size of key must be 256 bits");
+        }
+        */
+        //Cipher cipher = Cipher.getInstance("ChaCha20-Poly1305/None/NoPadding");
+
+        int NONCE_LEN = 12;
+        byte[] nonce = new byte[12]; // getNonce(); avoid
+        IvParameterSpec ivParameterSpec = new IvParameterSpec(nonce);
+        try{
+            Cipher cipher = Cipher.getInstance("ChaCha20/Poly1305/NoPadding");
+            cipher.init(Cipher.ENCRYPT_MODE, key, ivParameterSpec);
+            byte[] messageCipher = cipher.doFinal(msg.getBytes());
+            // Prepend the nonce with the message cipher
+            byte[] cipherText = new byte[messageCipher.length + NONCE_LEN];
+            System.arraycopy(nonce, 0, cipherText, 0, NONCE_LEN);
+            System.arraycopy(messageCipher, 0, cipherText, NONCE_LEN,
+                    messageCipher.length);
+            return new AbstractMap.SimpleEntry<>(byteArrayToString(cipherText), ivParameterSpec);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return null;
+
+    }
 }

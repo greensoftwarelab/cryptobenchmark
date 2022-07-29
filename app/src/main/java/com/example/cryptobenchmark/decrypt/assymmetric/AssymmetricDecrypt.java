@@ -77,10 +77,23 @@ public class AssymmetricDecrypt {
         return this.decrypt_providers.get(String.format("%s/%s/%s", algo, mode, paddingmode));
     }
 
-    public static String decrypt_RSA(String message, String mode, String padding, Key key, String provider, IvParameterSpec iv){
+    public static String decrypt_RSA_ECB_NOPADDING(String message, String mode, String padding, Key key, String provider, IvParameterSpec iv){
         Cipher cipher = null;
         try {
             cipher = Cipher.getInstance("RSA/ECB/NOPADDING", provider);
+            cipher.init(Cipher.DECRYPT_MODE, key);
+            byte[] plainText = cipher.doFinal(message.getBytes());
+            return byteArrayToString(plainText);
+        } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | NoSuchProviderException | IllegalBlockSizeException | BadPaddingException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public static String decrypt_RSA(String message, String mode, String padding, Key key, String provider, IvParameterSpec iv){
+        Cipher cipher = null;
+        try {
+            cipher = Cipher.getInstance(String.format("RSA/%s/%s", mode, padding), provider);
             cipher.init(Cipher.DECRYPT_MODE, key);
             byte[] plainText = cipher.doFinal(message.getBytes());
             return byteArrayToString(plainText);

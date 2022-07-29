@@ -136,4 +136,42 @@ public class SymmetricDecrypt {
         }
         return null;
     }
+
+    public static String decrypt_ChaCha20(String msg, SecretKey key){
+        int NONCE_LEN = 12;
+        byte[] nonce = new byte[NONCE_LEN];
+        byte[] input = StringToByteArray(msg);
+        System.arraycopy(input, 0, nonce, 0, NONCE_LEN);
+        byte[] messageCipher = new byte[input.length - NONCE_LEN];
+        System.arraycopy(input, NONCE_LEN, messageCipher, 0, input.length - NONCE_LEN);
+        IvParameterSpec ivParameterSpec = new IvParameterSpec(nonce);
+
+        try {
+            Cipher cipher = Cipher.getInstance("ChaCha20");
+            cipher.init(Cipher.DECRYPT_MODE, key, ivParameterSpec);
+            return new String(cipher.doFinal(messageCipher));
+        } catch (InvalidKeyException | InvalidAlgorithmParameterException | IllegalBlockSizeException | BadPaddingException | NoSuchAlgorithmException | NoSuchPaddingException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public static String decrypt_ChaCha20Poly(String msg, SecretKey key){
+        int NONCE_LEN = 12;
+        byte[] nonce = new byte[NONCE_LEN];
+        byte[] input = StringToByteArray(msg);
+        System.arraycopy(input, 0, nonce, 0, NONCE_LEN);
+        byte[] messageCipher = new byte[input.length - NONCE_LEN];
+        System.arraycopy(input, NONCE_LEN, messageCipher, 0, input.length - NONCE_LEN);
+        IvParameterSpec ivParameterSpec = new IvParameterSpec(nonce);
+
+        try {
+            Cipher cipher = Cipher.getInstance("ChaCha20/Poly1305/NoPadding");
+            cipher.init(Cipher.DECRYPT_MODE, key, ivParameterSpec);
+            return new String(cipher.doFinal(messageCipher));
+        } catch (InvalidKeyException | InvalidAlgorithmParameterException | IllegalBlockSizeException | BadPaddingException | NoSuchAlgorithmException | NoSuchPaddingException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 }

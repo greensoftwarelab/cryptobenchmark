@@ -9,24 +9,39 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import java.io.InputStream;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.Provider;
 import java.security.Security;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
+import java.util.stream.Collectors;
+
+import javax.crypto.Cipher;
+import javax.crypto.NoSuchPaddingException;
+
+import static java.util.stream.Collectors.toList;
 
 public class DeviceCryptoPrimitives {
 
     private String deviceName;
     private Map<String, CryptoProvider> deviceProviders = new HashMap<>();
+    private DevicePrimitiveRestrictions restrictionsObject;
 
 
-    public DeviceCryptoPrimitives(Context ctx) {
-        JSONObject jo = this.loadSONFile(ctx);
+    public DeviceCryptoPrimitives(Context ctx, boolean fromFile) {
+        this.restrictionsObject = new DevicePrimitiveRestrictions(ctx);
         try {
+            JSONObject jo = fromFile ? this.loadSONFile(ctx) : this.loadFromDevice();
             this.loadFromJSONObject(jo);
+            this.deviceProviders = this.restrictionsObject.filterPrimitives(this.deviceProviders);
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -34,17 +49,14 @@ public class DeviceCryptoPrimitives {
 
     public DeviceCryptoPrimitives() {
         this.deviceName = android.os.Build.MODEL;
+        this.restrictionsObject = new DevicePrimitiveRestrictions();
         try {
             JSONObject jo = this.loadFromDevice();
             this.loadFromJSONObject(jo);
+            this.deviceProviders = this.restrictionsObject.filterPrimitives(this.deviceProviders);
         } catch (JSONException e) {
             e.printStackTrace();
         }
-    }
-
-    public DeviceCryptoPrimitives(String deviceName, Map<String, CryptoProvider> deviceProviders) {
-        this.deviceName = deviceName;
-        this.deviceProviders = deviceProviders;
     }
 
     public String getDeviceName() {
@@ -57,6 +69,12 @@ public class DeviceCryptoPrimitives {
 
     public void addProvider(CryptoProvider cp){
         this.deviceProviders.put(cp.getProviderName(), cp);
+    }
+
+    public void removeProvider(String providerName){
+        if (this.deviceProviders.containsKey(providerName)){
+            this.deviceProviders.remove(providerName);
+        }
     }
 
     private JSONObject loadSONFile(Context ctx){
@@ -75,8 +93,45 @@ public class DeviceCryptoPrimitives {
         return jo;
     }
 
+    public CryptoProvider getFirstProviderImplementingAlgorithm(String algorithm){
+        for (CryptoProvider candCp : deviceProviders.values()){
+            if (candCp.getProviderPrimitives().values().stream().anyMatch(x-> x.getPrimitiveName().toLowerCase().contains(algorithm.toLowerCase()))){
+                // this provider has algorithm
+                return candCp;
+            }
+        }
+        return null;
+    }
+
+    public Map<String, Set<CryptoProvider>> getProvidersImplementingAlgorithm(String algorithm){
+        Map<String, Set<CryptoProvider>> res = new HashMap<>();
+        for (CryptoProvider candCp : deviceProviders.values()){
+            for (CryptoPrimitive x : candCp.getProviderPrimitives().values()) {
+                if (x.getPrimitiveName().toLowerCase().startsWith(algorithm.toLowerCase())) {
+                    if(res.containsKey(x.getPrimitiveName())){
+                        res.get(x.getPrimitiveName()).add(candCp);
+                    }
+                    else{
+                        res.put(x.getPrimitiveName(), new HashSet<>(Arrays.asList(candCp)));
+                    }
+                }
+            }
+        }
+        return res;
+    }
+
+
+    public List<String> getImplementedAlgorithms(){
+        List<String> l = new ArrayList<>();
+        for (CryptoProvider candCp : deviceProviders.values()){
+            l.addAll(candCp.getProviderPrimitives().keySet());
+        }
+        return l;
+    }
+
+
     public void loadFromJSONObject(JSONObject jo) throws JSONException {
-        this.deviceName = jo.getString("device") != null ? jo.getString("device") : this.deviceName;
+        this.deviceName = jo.has("device")? jo.getString("device") : this.deviceName;
         for (Iterator<String> it = jo.getJSONObject("providers").keys(); it.hasNext(); ) {
             String provider = it.next();
             CryptoProvider cp = new CryptoProvider(provider);
@@ -95,6 +150,7 @@ public class DeviceCryptoPrimitives {
         jo.put("device", this.deviceName);
         Provider[] providers = Security.getProviders();
         JSONObject providersInfo = new JSONObject();
+        //int misses = 0, hits = 0;
         for (Provider provider : providers) {
             JSONObject providerInfo = new JSONObject();
             Set<Provider.Service> services = provider.getServices();
@@ -108,6 +164,21 @@ public class DeviceCryptoPrimitives {
                 else{
                    algos.put(algo.getString("name"), mergeAlgos(algos.getJSONObject(algo.getString("name")), algo));
                 }
+                /*try {
+                    System.out.println(provider.getName());
+                    Cipher c = Cipher.getInstance(algo.getString("name"), provider.getName());
+                    //int x = Cipher.getMaxAllowedKeyLength(algo.getString("name"));
+
+                    hits++;
+                } catch (NoSuchAlgorithmException | NoSuchProviderException | NoSuchPaddingException e) {
+                    try {
+                        Cipher c = Cipher.getInstance(algo.getString("name"));
+                        hits++;
+                    } catch (NoSuchAlgorithmException | NoSuchPaddingException ee) {
+                        misses++;
+                    }
+
+                }*/
             }
             providerInfo.put("algorithms", algos);
             providersInfo.put(provider.getName(), providerInfo);
@@ -116,7 +187,7 @@ public class DeviceCryptoPrimitives {
         return jo;
     }
 
-    private static JSONObject mergeAlgos(JSONObject algo, JSONObject newAlgo) throws JSONException {
+    public static JSONObject mergeAlgos(JSONObject algo, JSONObject newAlgo) throws JSONException {
         if(newAlgo.has("modes")){
             JSONObject jo = algo.has("modes") ? algo.getJSONObject("modes") : new JSONObject();
             algo.put("modes", mergeJSONObjects(jo, (JSONObject) newAlgo.get("modes")));

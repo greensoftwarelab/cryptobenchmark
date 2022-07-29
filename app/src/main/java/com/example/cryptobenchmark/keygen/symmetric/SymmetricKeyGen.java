@@ -87,6 +87,7 @@ public class SymmetricKeyGen {
                     .setKeySize(keysize)
                     .setBlockModes(mode)
                     .setEncryptionPaddings(padding)
+                    .setRandomizedEncryptionRequired(false)
                     .build());
         } catch (InvalidAlgorithmParameterException e) {
             e.printStackTrace();
@@ -134,6 +135,87 @@ public class SymmetricKeyGen {
         return  keygenerator.generateKey();
     }
 
+    public static SecretKey gen_key_DES_AndroidKeyStoreBCWorkaround(int keysize, String mode, String padding){
+        // keys size: 56 bits
+        // block size: 64 bits
+        KeyGenerator keygenerator = null;
+        try {
+            //keygenerator = KeyGenerator.getInstance(String.format("DES/%s/%s", mode, padding), "BC");
+            keygenerator = KeyGenerator.getInstance("DES", "AndroidKeyStoreBCWorkaround");
+        } catch (NoSuchAlgorithmException | NoSuchProviderException e) {
+            e.printStackTrace();
+            return null;
+        }
+        return  keygenerator.generateKey();
+    }
+
+
+
+    public static SecretKey gen_key_3DES_AndroidKeyStore(int keysize, String mode, String padding){
+        // keys size: 56 bits
+        // block size: 64 bits
+        KeyGenerator keygenerator = null;
+        try {
+            //keygenerator = KeyGenerator.getInstance(String.format("DES/%s/%s", mode, padding), "BC");
+            keygenerator = KeyGenerator.getInstance("DESEDE", "AndroidKeyStore");
+        } catch (NoSuchAlgorithmException | NoSuchProviderException e) {
+            e.printStackTrace();
+            return null;
+        }
+        try {
+            keygenerator.init(new KeyGenParameterSpec.Builder("benchmark",
+                    KeyProperties.PURPOSE_ENCRYPT | KeyProperties.PURPOSE_DECRYPT)
+                    .setBlockModes(mode)
+                    .setEncryptionPaddings(padding)
+                    .setRandomizedEncryptionRequired(false)
+                    .build());
+        } catch (InvalidAlgorithmParameterException e) {
+            e.printStackTrace();
+            return null;
+        }
+
+        return  keygenerator.generateKey();
+    }
+
+    public static SecretKey gen_key_3DES_AndroidKeyStoreBCWorkaround(int keysize, String mode, String padding){
+        // keys size: 56 bits
+        // block size: 64 bits
+        KeyGenerator keygenerator = null;
+        try {
+            //keygenerator = KeyGenerator.getInstance(String.format("DES/%s/%s", mode, padding), "BC");
+            keygenerator = KeyGenerator.getInstance("DESEDE", "AndroidKeyStoreBCWorkaround");
+        } catch (NoSuchAlgorithmException | NoSuchProviderException e) {
+            e.printStackTrace();
+            return null;
+        }
+        try {
+            keygenerator.init(new KeyGenParameterSpec.Builder("benchmark",
+                    KeyProperties.PURPOSE_ENCRYPT | KeyProperties.PURPOSE_DECRYPT)
+                    .setBlockModes(KeyProperties.BLOCK_MODE_CBC)
+                    .setEncryptionPaddings(padding)
+                    .build());
+        } catch (InvalidAlgorithmParameterException e) {
+            e.printStackTrace();
+            return null;
+        }
+
+        return  keygenerator.generateKey();
+    }
+
+    public static SecretKey gen_key_3DES_AndroidOpenSSL(int keysize, String mode, String padding){
+        // keys size: 56 bits
+        // block size: 64 bits
+        KeyGenerator keygenerator = null;
+        try {
+            //keygenerator = KeyGenerator.getInstance(String.format("DES/%s/%s", mode, padding), "BC");
+            keygenerator = KeyGenerator.getInstance("DESEDE", "AndroidOpenSSL");
+        } catch (NoSuchAlgorithmException | NoSuchProviderException e) {
+            e.printStackTrace();
+            return null;
+        }
+        return  keygenerator.generateKey();
+    }
+
     public static SecretKey gen_key_BLOWFISH_BC(int keysize, String mode, String padding){
         KeyGenerator keygenerator = null;
         try {
@@ -165,6 +247,43 @@ public class SymmetricKeyGen {
             return null;
         }
         return  keygenerator.generateKey();
+    }
+
+    public static SecretKey gen_key_AES(int keysize, String mode, String padd, String provider){
+        KeyGenerator keygen = null;
+        try {
+            keygen = KeyGenerator.getInstance("AES", provider);
+        } catch (NoSuchAlgorithmException | NoSuchProviderException e) {
+            e.printStackTrace();
+            return null;
+        }
+        keygen.init(keysize);
+        return keygen.generateKey();
+    }
+
+    public static SecretKey gen_key(String algorithm, int keysize, String provider){
+        KeyGenerator keygen = null;
+        try {
+            keygen = KeyGenerator.getInstance(algorithm, provider);
+        } catch (NoSuchAlgorithmException | NoSuchProviderException e) {
+            e.printStackTrace();
+            return null;
+        }
+        keygen.init(keysize);
+        return keygen.generateKey();
+    }
+
+    public static SecretKey gen_key_ChaCha20(int keysize){
+        KeyGenerator keyGen = null;
+        try {
+            keyGen = KeyGenerator.getInstance("ChaCha20");
+            keyGen.init(keysize, SecureRandom.getInstanceStrong());
+            SecretKey secretKey = keyGen.generateKey();
+            return secretKey;
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
 }

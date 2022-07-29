@@ -39,6 +39,7 @@ public class ConfigurableCryptoPrimitive extends CryptoPrimitive{
     public Collection<CryptoParam> getParams(){
         return this.params.values();
     }
+
     public void addKeyLen(int keylen){
         this.keylens.add(keylen);
     }

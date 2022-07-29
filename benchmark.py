@@ -1,0 +1,114 @@
+from manafa.hunter_emanafa import HunterEManafa
+from subprocess import TimeoutExpired, Popen, PIPE
+from pylab import *
+import time
+import os, json
+
+
+#CMD="adb shell am instrument -w -m  -e debug false -e class 'com.example.cryptobenchmark.MeasureDigestTest' com.example.cryptobenchmark.test/android.support.test.runner.AndroidJUnitRunner"
+CMD="adb shell am instrument -w -m  -e debug false -e class 'com.example.cryptobenchmark.MeasureSymmetricTest' com.example.cryptobenchmark.test/android.support.test.runner.AndroidJUnitRunner"
+
+def execute_shell_command(cmd, args=[], timeout=None):
+    command = cmd + " " + " ".join(args) if len(args) > 0 else cmd
+    out = bytes()
+    err = bytes()
+    #print(command)
+    proc = Popen(command, stdout=PIPE, stderr=PIPE, shell=True)
+    try:
+        out, err = proc.communicate(timeout=timeout)
+    except TimeoutExpired as e:
+        print("command " + cmd + " timed out")
+        out = e.stdout if e.stdout is not None else out
+        err = e.stderr if e.stderr is not None else err
+        proc.kill()
+        proc.returncode = 1
+    return proc.returncode, out, err
+
+def measure(times=1):
+    em = HunterEManafa()
+    for i in range(0, times):
+        em.init()
+        em.start()
+        res, o , e = execute_shell_command(CMD)
+        if res != 0:
+            raise Exception(f"Error while running cmd {CMD}")
+        em.stop()
+        begin = em.perf_events.events[0].time if len(em.perf_events.events) > 1 else em.bat_events.events[0].time  # first sample from perfetto
+        end = em.perf_events.events[-1].time if len(em.perf_events.events) > 1 else em.bat_events.events[-1].time  # first s
+        p, c, z = em.get_consumption_in_between(begin, end)
+        out_file = em.save_final_report(begin)
+        print(f"Energy consumed: {p} Joules")
+
+
+def fetch_res_files():
+    return [x for x in os.listdir() if 'manafa_res' in x]
+
+
+def parse_json(filepath):
+    js = {}
+    with open(filepath, 'r') as j:
+        js = json.load(j)
+    return js
+
+def extract_values_from_files(files):
+    rm_val = " " #"MeasureSymmetricTest_test_"
+    function_dict = {}
+    jsons = [parse_json(x) for x in files]
+    for j_file in jsons:
+        #print(json.dumps(j_file['invoked_methods'], indent=1))
+        for method, invs in j_file['invoked_methods'].items():
+            mname = method.replace(rm_val, "")
+            for invok in invs.values():
+                #print(method)
+                #print(invok)
+                function_dict[mname] = {'times': [invok['elapsed_time']], 'energies': [invok['cpu']]} if mname not in function_dict else {'times': function_dict[mname]['times'] + [invok['elapsed_time']] , 'energies': function_dict[mname]['energies'] + [invok['cpu']]}
+    return function_dict
+
+def gen_box_plot(key_list, list_of_lists, title="ai"):
+    # eg gen_box_plot(['group1', 'group2'], [[1, 2],[3, 4]]):
+    fig1, en_box = plt.subplots()
+    the_list = list_of_lists
+
+    bp_dict = en_box.boxplot(x=the_list,
+                             notch=False,  # notch shape
+                             vert=True,  # vertical box aligmnent
+                             sym='ko',  # red circle for outliers
+                             patch_artist=True,  # fill with color
+                             )
+    i = 0
+    for line in bp_dict['medians']:
+        x, y = line.get_xydata()[1]  # top of median line
+        xx, yy = line.get_xydata()[0]
+        text(x, y, '%.2f' % y, fontsize=5)  # draw above, centered
+        # text(xx, en_box.get_ylim()[1] * 0.98, '%.2f' % np.average(list_all_samples[i]), color='darkkhaki')
+        i = i + 1
+
+        # set colors
+    colors = ['lightblue', 'darkkhaki']
+    i = 0
+    for bplot in bp_dict['boxes']:
+        i = i + 1
+        bplot.set_facecolor(colors[i % len(colors)])
+
+    xtickNames = plt.setp(en_box, xticklabels=key_list)
+    plt.setp(xtickNames, rotation=90, fontsize=5)
+    plt.suptitle(title)
+    plt.show()
+
+def plot_res(res):
+    filtro = ""
+    keys = [ x for x in list(res.keys()) if filtro in x]
+    times = [ b['times'] for a,b in res.items() if filtro in a]
+    consumptions = [ b['energies'] for a,b in res.items() if filtro in a]
+    gen_box_plot(keys, times, "elapsed time " + filtro)
+    gen_box_plot(keys, consumptions, "energy")
+    #gen_box_plot(['aaa', 'bbb'], [[1,2],[3,5]])
+
+def main():
+    measure(times=1)
+    files = fetch_res_files()
+    fc =extract_values_from_files(files)
+    plot_res(fc)
+
+if __name__ == '__main__':
+    main()

@@ -1,0 +1,52 @@
+package com.example.cryptobenchmark;
+
+import com.example.cryptobenchmark.keygen.assymmetric.AssymmetricEncryptKeyGen;
+import com.example.cryptobenchmark.misc.DeviceCryptoPrimitives;
+import com.example.cryptobenchmark.misc.datatypes.StringType;
+import com.example.cryptobenchmark.sign.Sign;
+import com.example.cryptobenchmark.verify.Verify;
+
+import org.junit.Test;
+
+import java.security.InvalidAlgorithmParameterException;
+import java.security.KeyPair;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
+public class SignTest {
+
+    public static final int DATA_LEN = 255;
+    public static final int KEY_LEN = 1024;
+
+    @Test
+    public void test_dsa_sign() throws NoSuchAlgorithmException {
+        String algo = "DSA";
+        KeyPair kp = AssymmetricEncryptKeyGen.gen_key(KEY_LEN, algo);
+        String msg = (String) StringType.genRandomWithSize(DATA_LEN).getValue();
+        String signature = Sign.sign(msg, algo, kp.getPrivate());
+        assertNotNull(signature);
+        assertTrue(Verify.verify(msg, signature, algo, kp.getPublic()));
+    }
+
+    @Test
+    public void test_sign_all() throws NoSuchAlgorithmException{
+        List<String> algorithms = new ArrayList<>(Arrays.asList("DSA"));
+        String msg = (String) StringType.genRandomWithSize(DATA_LEN).getValue();
+        DeviceCryptoPrimitives dcp = new DeviceCryptoPrimitives();
+        for(String algorithm: algorithms){
+            System.out.println(algorithm);
+            Sign s = new Sign(dcp, Arrays.asList(algorithm));
+            Verify v = new Verify(dcp, Arrays.asList(algorithm));
+            KeyPair kp = AssymmetricEncryptKeyGen.gen_key(KEY_LEN, algorithm);
+            List<String> signatures = s.sign_all(msg, kp.getPrivate());
+            assertNotNull(signatures);
+            assertTrue(v.verify_all(msg, signatures, kp.getPublic()));
+        }
+    }
+}

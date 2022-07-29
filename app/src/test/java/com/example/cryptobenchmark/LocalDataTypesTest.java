@@ -6,7 +6,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-public class DataTypesTest {
+public class LocalDataTypesTest {
 
     @Test
     public void testStringTypeRandomType() {

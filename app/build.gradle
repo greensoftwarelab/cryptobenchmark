@@ -1,5 +1,7 @@
-apply plugin: 'com.android.library'
-
+plugins {
+    id 'com.android.application'
+    id 'hunter-debug'
+}
 android {
     compileSdkVersion 27
 
@@ -27,17 +29,21 @@ android {
         unitTests {
             includeAndroidResources = true
         }
+
     }
     buildToolsVersion '27.0.3'
 
 }
 
 dependencies {
+    // 'io.github.raphael28:hunter-debug-library:1.0.1'
+    implementation 'io.github.greensoftwarelab:hunter-emanafa-library:1.0.1'
     implementation 'com.android.support:appcompat-v7:27.1.1'
     implementation 'com.android.support:design:27.1.1'
-    testImplementation 'junit:junit:4+ '
-    testImplementation 'org.robolectric:robolectric:4.8'
-    testImplementation 'junit:junit:4.12'
+    testImplementation 'junit:junit:4+'
+    testImplementation("org.json:json:20210307")
+    //testImplementation 'org.robolectric:robolectric:4.6.1'
+    androidTestImplementation 'io.github.greensoftwarelab:hunter-emanafa-library:1.0.1'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.3'
 }

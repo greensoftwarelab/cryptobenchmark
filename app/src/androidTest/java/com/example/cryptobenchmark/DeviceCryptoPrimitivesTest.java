@@ -24,9 +24,9 @@ import static org.junit.Assert.assertNotNull;
 public class DeviceCryptoPrimitivesTest {
 
     @Test
-    public void testFileLoad(){
-        Context ctx = InstrumentationRegistry.getContext();
-        DeviceCryptoPrimitives de = new DeviceCryptoPrimitives(ctx);
+    public void testFileLoadDevice(){
+        Context ctx = InstrumentationRegistry.getInstrumentation().getTargetContext();
+        DeviceCryptoPrimitives de = new DeviceCryptoPrimitives(ctx, false);
         assertNotNull(de);
 
     }
@@ -37,6 +37,7 @@ public class DeviceCryptoPrimitivesTest {
         assertNotNull(de);
     }
 
+    /*
     @Test
     public void testSymmetricWithFileGen(){
         DeviceCryptoPrimitives de = new DeviceCryptoPrimitives();
@@ -44,5 +45,5 @@ public class DeviceCryptoPrimitivesTest {
         SymmetricEncrypt se = new SymmetricEncrypt(de);
         SecretKey pk = gen_key_AES_AndroidOpenSSL(128, "", "");
         Map<String, IvParameterSpec> m = se.encrypt_all(msg, "AES", pk,"AndroidOpenSSL");
-    }
+    }*/
 }
