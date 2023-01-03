@@ -3,19 +3,22 @@ package com.example.cryptobenchmark;
 import android.support.test.runner.AndroidJUnit4;
 
 
+import com.example.cryptobenchmark.decrypt.symmetric.SymmetricDecrypt;
+import com.example.cryptobenchmark.decrypt.symmetric.SymmetricDecryptOperation;
+import com.example.cryptobenchmark.encrypt.assymmetric.AssymmetricEncrypt;
 import com.example.cryptobenchmark.encrypt.symmetric.SymmetricEncrypt;
-import com.example.cryptobenchmark.misc.CryptoProvider;
+import com.example.cryptobenchmark.encrypt.symmetric.SymmetricEncryptOperation;
 import com.example.cryptobenchmark.misc.DeviceCryptoPrimitives;
 import com.example.cryptobenchmark.misc.datatypes.StringType;
 import com.hunter.library.debug.HunterDebug;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import java.util.Map;
-import java.util.Set;
-
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
+
+import static com.example.cryptobenchmark.encrypt.symmetric.SymmetricEncrypt.encrypt_BLOWFISH;
 import static com.example.cryptobenchmark.keygen.symmetric.SymmetricKeyGen.gen_key_3DES_AndroidKeyStore;
 import static com.example.cryptobenchmark.keygen.symmetric.SymmetricKeyGen.gen_key_3DES_AndroidOpenSSL;
 import static com.example.cryptobenchmark.keygen.symmetric.SymmetricKeyGen.gen_key_AES_AndroidKeyStore;
@@ -25,32 +28,36 @@ import static com.example.cryptobenchmark.keygen.symmetric.SymmetricKeyGen.gen_k
 import static com.example.cryptobenchmark.keygen.symmetric.SymmetricKeyGen.gen_key_BLOWFISH_BC;
 import static com.example.cryptobenchmark.keygen.symmetric.SymmetricKeyGen.gen_key_ChaCha20;
 import static com.example.cryptobenchmark.keygen.symmetric.SymmetricKeyGen.gen_key_DES_BC;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 
 @RunWith(AndroidJUnit4.class)
-public class MeasureSymmetricTest {
+public class MeasureSymmetricTest extends MeasureTest {
 
-    private static int N_EXECS = 200;
-    private static int KEY_LEN = 256;
+    public static void encrypt_decrypt(SymmetricEncryptOperation so, SymmetricDecryptOperation sdo,
+                                       SecretKey sk, String[] params,
+                                       String provider, String padding, String mode){
+        for (String param : params) {
+            Map.Entry<String, IvParameterSpec> res = so.encrypt(param, mode, padding, sk, provider);
+            String originaltext = sdo.decrypt(res.getKey(), mode, padding, sk, provider, res.getValue());
+        }
+    }
 
-    @Test
-    public void test_get_impls() {
-        String algo = "SHA";
-        DeviceCryptoPrimitives de = new DeviceCryptoPrimitives();
-        Map<String, Set<CryptoProvider>> cps =  de.getProvidersImplementingAlgorithm(algo);
-        System.out.println(cps);
+    public static void encrypt(SymmetricEncryptOperation so, SymmetricDecryptOperation sdo,
+                                       SecretKey sk, String[] params,
+                                       String provider, String padding, String mode){
+        for (String param : params) {
+            Map.Entry<String, IvParameterSpec> res = so.encrypt(param, mode, padding, sk, provider);
+        }
     }
 
     // CHACHA20
-    @Test
     @HunterDebug
+    @Test
     public void test_CHA_CHA_20_AndroidOpenSSL() {
         String msg = (String) StringType.genRandomWithSize(255).getValue();
         String provider = "AndroidOpenSSL";
         SymmetricEncrypt se = new SymmetricEncrypt(new DeviceCryptoPrimitives());
-        SecretKey sk = gen_key_ChaCha20(KEY_LEN);
-        for (int i = 0; i < N_EXECS ; i++) {
+        SecretKey sk = gen_key_ChaCha20(keyLen);
+        for (int i = 0; i < nTimes ; i++) {
             String target = msg + (i % 9);
             se.encrypt_ChaCha20(target, sk);
         }
@@ -66,8 +73,8 @@ public class MeasureSymmetricTest {
         String padd = "NOPADDING";
         String provider = "AndroidKeyStoreBCWorkaround";
         SymmetricEncrypt se = new SymmetricEncrypt(new DeviceCryptoPrimitives());
-        SecretKey sk = gen_key_AES_AndroidKeyStore(KEY_LEN, mode, padd);
-        for (int i = 0; i < N_EXECS ; i++) {
+        SecretKey sk = gen_key_AES_AndroidKeyStore(keyLen, mode, padd);
+        for (int i = 0; i < nTimes ; i++) {
             String target = msg + (i % 9);
             se.encrypt_AES(target, mode, padd, sk, provider);
         }
@@ -81,8 +88,8 @@ public class MeasureSymmetricTest {
         String padd = "NOPADDING";
         String provider = "AndroidOpenSSL";
         SymmetricEncrypt se = new SymmetricEncrypt(new DeviceCryptoPrimitives());
-        SecretKey sk = gen_key_AES_AndroidOpenSSL(KEY_LEN, mode, padd);
-        for (int i = 0; i < N_EXECS ; i++) {
+        SecretKey sk = gen_key_AES_AndroidOpenSSL(keyLen, mode, padd);
+        for (int i = 0; i < nTimes ; i++) {
             String target = msg + (i % 9);
             se.encrypt_AES(target, mode, padd, sk, provider);
         }
@@ -98,8 +105,8 @@ public class MeasureSymmetricTest {
         String padd = "NOPADDING";
         String provider = "AndroidOpenSSL";
         SymmetricEncrypt se = new SymmetricEncrypt(new DeviceCryptoPrimitives());
-        SecretKey sk = gen_key_AES_AndroidOpenSSL(KEY_LEN, mode, padd);
-        for (int i = 0; i < N_EXECS ; i++) {
+        SecretKey sk = gen_key_AES_AndroidOpenSSL(keyLen, mode, padd);
+        for (int i = 0; i < nTimes ; i++) {
             String target = msg + (i % 9);
             se.encrypt_AES(target, mode, padd, sk, provider);
         }
@@ -117,7 +124,7 @@ public class MeasureSymmetricTest {
         int keylen = 128;
         SymmetricEncrypt se = new SymmetricEncrypt(new DeviceCryptoPrimitives());
         SecretKey sk = gen_key_AES_AndroidOpenSSL(keylen, mode, padd);
-        for (int i = 0; i < N_EXECS ; i++) {
+        for (int i = 0; i < nTimes ; i++) {
             String target = msg + (i % 9);
             se.encrypt_AES(target, mode, padd, sk, provider);
         }
@@ -133,7 +140,7 @@ public class MeasureSymmetricTest {
         int keylen = 256;
         SymmetricEncrypt se = new SymmetricEncrypt(new DeviceCryptoPrimitives());
         SecretKey sk = gen_key_AES_AndroidOpenSSL(keylen, mode, padd);
-        for (int i = 0; i < N_EXECS ; i++) {
+        for (int i = 0; i < nTimes ; i++) {
             String target = msg + (i % 9);
             se.encrypt_AES(target, mode, padd, sk, provider);
         }
@@ -149,7 +156,7 @@ public class MeasureSymmetricTest {
         int keylen = 128;
         SymmetricEncrypt se = new SymmetricEncrypt(new DeviceCryptoPrimitives());
         SecretKey sk = gen_key_AES_AndroidOpenSSL(keylen, mode, padd);
-        for (int i = 0; i < N_EXECS ; i++) {
+        for (int i = 0; i < nTimes ; i++) {
             String target = msg + (i % 9);
             se.encrypt_AES(target, mode, padd, sk, provider);
         }
@@ -167,7 +174,7 @@ public class MeasureSymmetricTest {
         int keylen = 128;
         SymmetricEncrypt se = new SymmetricEncrypt(new DeviceCryptoPrimitives());
         SecretKey sk = gen_key_AES_AndroidOpenSSL(keylen, mode, padd);
-        for (int i = 0; i < N_EXECS ; i++) {
+        for (int i = 0; i < nTimes ; i++) {
             String target = msg + (i % 9);
             se.encrypt_AES(target, mode, padd, sk, provider);
         }
@@ -183,7 +190,7 @@ public class MeasureSymmetricTest {
         int keylen = 128;
         SymmetricEncrypt se = new SymmetricEncrypt(new DeviceCryptoPrimitives());
         SecretKey sk =  gen_key_AES_AndroidKeyStore(keylen, mode, padd);
-        for (int i = 0; i < N_EXECS ; i++) {
+        for (int i = 0; i < nTimes ; i++) {
             String target = msg + (i % 9);
             se.encrypt_AES(target, mode, padd, sk, provider);
         }
@@ -200,7 +207,7 @@ public class MeasureSymmetricTest {
         int keylen = 128;
         SymmetricEncrypt se = new SymmetricEncrypt(new DeviceCryptoPrimitives());
         SecretKey sk =  gen_key_AES_AndroidOpenSSL(keylen, mode, padd);
-        for (int i = 0; i < N_EXECS ; i++) {
+        for (int i = 0; i < nTimes ; i++) {
             String target = msg + (i % 9);
             se.encrypt_AES(target, mode, padd, sk, provider);
         }
@@ -216,7 +223,7 @@ public class MeasureSymmetricTest {
         int keylen = 128;
         SymmetricEncrypt se = new SymmetricEncrypt(new DeviceCryptoPrimitives());
         SecretKey sk =  gen_key_AES_AndroidOpenSSL(keylen, mode, padd);
-        for (int i = 0; i < N_EXECS ; i++) {
+        for (int i = 0; i < nTimes ; i++) {
             String target = msg + (i % 9);
             se.encrypt_AES(target, mode, padd, sk, provider);
         }
@@ -234,7 +241,7 @@ public class MeasureSymmetricTest {
         int keylen = 128;
         SymmetricEncrypt se = new SymmetricEncrypt(new DeviceCryptoPrimitives());
         SecretKey sk = gen_key_AES_AndroidOpenSSL(keylen, mode, padd);
-        for (int i = 0; i < N_EXECS ; i++) {
+        for (int i = 0; i < nTimes ; i++) {
             String target = msg + (i % 9);
             se.encrypt_AES(target, mode, padd, sk, provider);
         }
@@ -250,7 +257,7 @@ public class MeasureSymmetricTest {
         int keylen = 128;
         SymmetricEncrypt se = new SymmetricEncrypt(new DeviceCryptoPrimitives());
         SecretKey sk =  gen_key_AES_AndroidKeyStore(keylen, mode, padd);
-        for (int i = 0; i < N_EXECS ; i++) {
+        for (int i = 0; i < nTimes ; i++) {
             String target = msg + (i % 9);
             se.encrypt_AES(target, mode, padd, sk, provider);
         }
@@ -268,7 +275,7 @@ public class MeasureSymmetricTest {
         int keylen = 128;
         SymmetricEncrypt se = new SymmetricEncrypt(new DeviceCryptoPrimitives());
         SecretKey sk =  gen_key_DES_BC(keylen, mode, padd);
-        for (int i = 0; i < N_EXECS ; i++) {
+        for (int i = 0; i < nTimes ; i++) {
             String target = msg + (i % 9);
             se.encrypt_DES(target, mode, padd, sk, provider);
         }
@@ -284,7 +291,7 @@ public class MeasureSymmetricTest {
         int keylen = 128;
         SymmetricEncrypt se = new SymmetricEncrypt(new DeviceCryptoPrimitives());
         SecretKey sk =  gen_key_DES_BC(keylen, mode, padd);
-        for (int i = 0; i < N_EXECS ; i++) {
+        for (int i = 0; i < nTimes ; i++) {
             String target = msg + (i % 9);
             se.encrypt_DES(target, mode, padd, sk, provider);
         }
@@ -300,14 +307,13 @@ public class MeasureSymmetricTest {
         int keylen = 128;
         SymmetricEncrypt se = new SymmetricEncrypt(new DeviceCryptoPrimitives());
         SecretKey sk =  gen_key_DES_BC(keylen, mode, padd);
-        for (int i = 0; i < N_EXECS ; i++) {
+        for (int i = 0; i < nTimes ; i++) {
             String target = msg + (i % 9);
             se.encrypt_DES(target, mode, padd, sk, provider);
         }
     }
 
     // DES - CTR
-
     @Test
     @HunterDebug
     public void test_DES_CTR_NOPADDING_BC() {
@@ -316,8 +322,8 @@ public class MeasureSymmetricTest {
         String padd = "NOPADDING";
         String provider = "BC";
         SymmetricEncrypt se = new SymmetricEncrypt(new DeviceCryptoPrimitives());
-        SecretKey sk =  gen_key_DES_BC(KEY_LEN, mode, padd);
-        for (int i = 0; i < N_EXECS ; i++) {
+        SecretKey sk =  gen_key_DES_BC(keyLen, mode, padd);
+        for (int i = 0; i < nTimes ; i++) {
             String target = msg + (i % 9);
             se.encrypt_DES(target, mode, padd, sk, provider);
         }
@@ -331,8 +337,8 @@ public class MeasureSymmetricTest {
         String padd = "PKCS5PADDING";
         String provider = "BC";
         SymmetricEncrypt se = new SymmetricEncrypt(new DeviceCryptoPrimitives());
-        SecretKey sk =  gen_key_DES_BC(KEY_LEN, mode, padd);
-        for (int i = 0; i < N_EXECS ; i++) {
+        SecretKey sk =  gen_key_DES_BC(keyLen, mode, padd);
+        for (int i = 0; i < nTimes ; i++) {
             String target = msg + (i % 9);
             se.encrypt_DES(target, mode, padd, sk, provider);
         }
@@ -346,8 +352,8 @@ public class MeasureSymmetricTest {
         String padd = "PKCS7PADDING";
         String provider = "BC";
         SymmetricEncrypt se = new SymmetricEncrypt(new DeviceCryptoPrimitives());
-        SecretKey sk =  gen_key_DES_BC(KEY_LEN, mode, padd);
-        for (int i = 0; i < N_EXECS ; i++) {
+        SecretKey sk =  gen_key_DES_BC(keyLen, mode, padd);
+        for (int i = 0; i < nTimes ; i++) {
             String target = msg + (i % 9);
             se.encrypt_DES(target, mode, padd, sk, provider);
         }
@@ -363,8 +369,8 @@ public class MeasureSymmetricTest {
         String padd = "NOPADDING";
         String provider = "BC";
         SymmetricEncrypt se = new SymmetricEncrypt(new DeviceCryptoPrimitives());
-        SecretKey sk =  gen_key_DES_BC(KEY_LEN, mode, padd);
-        for (int i = 0; i < N_EXECS ; i++) {
+        SecretKey sk =  gen_key_DES_BC(keyLen, mode, padd);
+        for (int i = 0; i < nTimes ; i++) {
             String target = msg + (i % 9);
             se.encrypt_DES(target, mode, padd, sk, provider);
         }
@@ -378,8 +384,8 @@ public class MeasureSymmetricTest {
         String padd = "PKCS5PADDING";
         String provider = "BC";
         SymmetricEncrypt se = new SymmetricEncrypt(new DeviceCryptoPrimitives());
-        SecretKey sk =  gen_key_DES_BC(KEY_LEN, mode, padd);
-        for (int i = 0; i < N_EXECS ; i++) {
+        SecretKey sk =  gen_key_DES_BC(keyLen, mode, padd);
+        for (int i = 0; i < nTimes ; i++) {
             String target = msg + (i % 9);
             se.encrypt_DES(target, mode, padd, sk, provider);
         }
@@ -393,8 +399,8 @@ public class MeasureSymmetricTest {
         String padd = "PKCS7PADDING";
         String provider = "BC";
         SymmetricEncrypt se = new SymmetricEncrypt(new DeviceCryptoPrimitives());
-        SecretKey sk =  gen_key_DES_BC(KEY_LEN, mode, padd);
-        for (int i = 0; i < N_EXECS ; i++) {
+        SecretKey sk =  gen_key_DES_BC(keyLen, mode, padd);
+        for (int i = 0; i < nTimes ; i++) {
             String target = msg + (i % 9);
             se.encrypt_DES(target, mode, padd, sk, provider);
         }
@@ -410,8 +416,8 @@ public class MeasureSymmetricTest {
         String padd = "NOPADDING";
         String provider = "BC";
         SymmetricEncrypt se = new SymmetricEncrypt(new DeviceCryptoPrimitives());
-        SecretKey sk =  gen_key_DES_BC(KEY_LEN, mode, padd);
-        for (int i = 0; i < N_EXECS ; i++) {
+        SecretKey sk =  gen_key_DES_BC(keyLen, mode, padd);
+        for (int i = 0; i < nTimes ; i++) {
             String target = msg + (i % 9);
             se.encrypt_DES(target, mode, padd, sk, provider);
         }
@@ -425,8 +431,8 @@ public class MeasureSymmetricTest {
         String padd = "PKCS5PADDING";
         String provider = "BC";
         SymmetricEncrypt se = new SymmetricEncrypt(new DeviceCryptoPrimitives());
-        SecretKey sk =  gen_key_DES_BC(KEY_LEN, mode, padd);
-        for (int i = 0; i < N_EXECS ; i++) {
+        SecretKey sk =  gen_key_DES_BC(keyLen, mode, padd);
+        for (int i = 0; i < nTimes ; i++) {
             String target = msg + (i % 9);
             se.encrypt_DES(target, mode, padd, sk, provider);
         }
@@ -440,8 +446,8 @@ public class MeasureSymmetricTest {
         String padd = "PKCS7PADDING";
         String provider = "BC";
         SymmetricEncrypt se = new SymmetricEncrypt(new DeviceCryptoPrimitives());
-        SecretKey sk =  gen_key_DES_BC(KEY_LEN, mode, padd);
-        for (int i = 0; i < N_EXECS ; i++) {
+        SecretKey sk =  gen_key_DES_BC(keyLen, mode, padd);
+        for (int i = 0; i <  nTimes; i++) {
             String target = msg + (i % 9);
             se.encrypt_DES(target, mode, padd, sk, provider);
         }
@@ -457,8 +463,8 @@ public class MeasureSymmetricTest {
         String padd = "NOPADDING";
         String provider = "AndroidOpenSSL";
         SymmetricEncrypt se = new SymmetricEncrypt(new DeviceCryptoPrimitives());
-        SecretKey sk =  gen_key_3DES_AndroidOpenSSL(KEY_LEN, mode, padd);
-        for (int i = 0; i < N_EXECS ; i++) {
+        SecretKey sk =  gen_key_3DES_AndroidOpenSSL(keyLen, mode, padd);
+        for (int i = 0; i < nTimes ; i++) {
             String target = msg + (i % 9);
             se.encrypt_3DES(target, mode, padd, sk, provider);
         }
@@ -472,8 +478,8 @@ public class MeasureSymmetricTest {
         String padd = "PKCS5PADDING";
         String provider = "AndroidOpenSSL";
         SymmetricEncrypt se = new SymmetricEncrypt(new DeviceCryptoPrimitives());
-        SecretKey sk =  gen_key_3DES_AndroidOpenSSL(KEY_LEN, mode, padd);
-        for (int i = 0; i < N_EXECS ; i++) {
+        SecretKey sk =  gen_key_3DES_AndroidOpenSSL(keyLen, mode, padd);
+        for (int i = 0; i < nTimes ; i++) {
             String target = msg + (i % 9);
             se.encrypt_3DES(target, mode, padd, sk, provider);
         }
@@ -487,8 +493,8 @@ public class MeasureSymmetricTest {
         String padd = "PKCS7PADDING";
         String provider = "AndroidOpenSSL";
         SymmetricEncrypt se = new SymmetricEncrypt(new DeviceCryptoPrimitives());
-        SecretKey sk =  gen_key_3DES_AndroidOpenSSL(KEY_LEN, mode, padd);
-        for (int i = 0; i < N_EXECS ; i++) {
+        SecretKey sk =  gen_key_3DES_AndroidOpenSSL(keyLen, mode, padd);
+        for (int i = 0; i < nTimes ; i++) {
             String target = msg + (i % 9);
             se.encrypt_3DES(target, mode, padd, sk, provider);
         }
@@ -504,8 +510,8 @@ public class MeasureSymmetricTest {
         String padd = "NOPADDING";
         String provider = "AndroidKeyStoreBCWorkaround";
         SymmetricEncrypt se = new SymmetricEncrypt(new DeviceCryptoPrimitives());
-        SecretKey sk =  gen_key_3DES_AndroidKeyStore(KEY_LEN, mode, padd);
-        for (int i = 0; i < N_EXECS ; i++) {
+        SecretKey sk =  gen_key_3DES_AndroidKeyStore(keyLen, mode, padd);
+        for (int i = 0; i < nTimes ; i++) {
             String target = msg + (i % 9);
             se.encrypt_3DES(target, mode, padd, sk, provider);
         }
@@ -519,8 +525,8 @@ public class MeasureSymmetricTest {
         String padd = "PKCS7PADDING";
         String provider = "AndroidKeyStoreBCWorkaround";
         SymmetricEncrypt se = new SymmetricEncrypt(new DeviceCryptoPrimitives());
-        SecretKey sk =  gen_key_3DES_AndroidKeyStore(KEY_LEN, mode, padd);
-        for (int i = 0; i < N_EXECS ; i++) {
+        SecretKey sk =  gen_key_3DES_AndroidKeyStore(keyLen, mode, padd);
+        for (int i = 0; i < nTimes ; i++) {
             String target = msg + (i % 9);
             se.encrypt_3DES(target, mode, padd, sk, provider);
         }
@@ -535,12 +541,11 @@ public class MeasureSymmetricTest {
         String mode = "";
         String padd = "";
         String provider = "BC";
-        SymmetricEncrypt se = new SymmetricEncrypt(new DeviceCryptoPrimitives());
-        SecretKey sk =  gen_key_ARC4_BC(KEY_LEN, mode, padd);
-        for (int i = 0; i < N_EXECS ; i++) {
-            String target = msg + (i % 9);
-            se.encrypt_ARC4(target, mode, padd, sk, provider);
-        }
+        String[] params = gen_random_workload(inputSize, nTimes);
+        SymmetricEncryptOperation so = SymmetricEncrypt::encrypt_ARC4;
+        SymmetricDecryptOperation deo = SymmetricDecrypt::decrypt_ARC4;
+        SecretKey sk =  gen_key_ARC4_BC(keyLen, mode, padd);
+        encrypt_decrypt(so, deo, sk, params, provider, padd, mode);
     }
 
     @Test
@@ -550,28 +555,42 @@ public class MeasureSymmetricTest {
         String mode = "";
         String padd = "";
         String provider = "AndroidOpenSSL";
-        SymmetricEncrypt se = new SymmetricEncrypt(new DeviceCryptoPrimitives());
-        SecretKey sk =  gen_key_ARC4_AndroidOpenSSL(KEY_LEN, mode, padd);
-        for (int i = 0; i < N_EXECS ; i++) {
-            String target = msg + (i % 9);
-            se.encrypt_ARC4(target, mode, padd, sk, provider);
-        }
+        String[] params = gen_random_workload(inputSize, nTimes);
+        SymmetricEncryptOperation so = SymmetricEncrypt::encrypt_ARC4;
+        SymmetricDecryptOperation deo = SymmetricDecrypt::decrypt_ARC4;
+        SecretKey sk =  gen_key_ARC4_AndroidOpenSSL(keyLen, mode, padd);
+        encrypt_decrypt(so, deo, sk, params, provider, padd, mode);
     }
 
+    /*
     // BLOWFISH
-    @Test
     @HunterDebug
+    @Test
     public void test_BLOWFISH_BC() {
         String msg = (String) StringType.genRandomWithSize(255).getValue();
         String mode = "";
         String padd = "";
         String provider = "BC";
         SymmetricEncrypt se = new SymmetricEncrypt(new DeviceCryptoPrimitives());
-        SecretKey sk =  gen_key_BLOWFISH_BC(KEY_LEN, mode, padd);
-        for (int i = 0; i < N_EXECS ; i++) {
+        SecretKey sk =  gen_key_BLOWFISH_BC(keyLen, mode, padd);
+        for (int i = 0; i < nTimes ; i++) {
             String target = msg + (i % 9);
-            Map.Entry<String, IvParameterSpec> res = se.encrypt_BLOWFISH(target, mode, padd, sk, provider);
+            Map.Entry<String, IvParameterSpec> res = encrypt_BLOWFISH(target, mode, padd, sk, provider);
             assertNotNull(res);
         }
+    }*/
+
+    // BLOWFISH
+    @HunterDebug
+    @Test
+    public void test_BLOWFISH_BC() {
+        String mode = "";
+        String padd = "";
+        String provider = "BC";
+        SecretKey sk =  gen_key_BLOWFISH_BC(keyLen, mode, padd);
+        String[] params = gen_random_workload(inputSize, nTimes);
+        SymmetricEncryptOperation so = SymmetricEncrypt::encrypt_BLOWFISH;
+        SymmetricDecryptOperation deo = SymmetricDecrypt::decrypt_BLOWFISH;
+        encrypt_decrypt(so, deo, sk, params, provider, padd, mode);
     }
 }

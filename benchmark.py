@@ -1,12 +1,15 @@
+from operator import inv
+from re import T
 from manafa.hunter_emanafa import HunterEManafa
 from subprocess import TimeoutExpired, Popen, PIPE
 from pylab import *
 import time
 import os, json
+import argparse
 
 
 #CMD="adb shell am instrument -w -m  -e debug false -e class 'com.example.cryptobenchmark.MeasureDigestTest' com.example.cryptobenchmark.test/android.support.test.runner.AndroidJUnitRunner"
-CMD="adb shell am instrument -w -m  -e debug false -e class 'com.example.cryptobenchmark.MeasureSymmetricTest' com.example.cryptobenchmark.test/android.support.test.runner.AndroidJUnitRunner"
+CMD="adb shell am instrument -w -m -e debug false -e class 'com.example.cryptobenchmark.{test_class}' {test_package}/{test_runner}"
 
 def execute_shell_command(cmd, args=[], timeout=None):
     command = cmd + " " + " ".join(args) if len(args) > 0 else cmd
@@ -24,12 +27,15 @@ def execute_shell_command(cmd, args=[], timeout=None):
         proc.returncode = 1
     return proc.returncode, out, err
 
-def measure(times=1):
+def measure(args_obj):
     em = HunterEManafa()
-    for i in range(0, times):
+    for i in range(0, args_obj.n_times):
         em.init()
         em.start()
-        res, o , e = execute_shell_command(CMD)
+        res, o , e = execute_shell_command(build_exec_cmd(args_obj))
+        print(res)
+        print(o)
+        print(e)
         if res != 0:
             raise Exception(f"Error while running cmd {CMD}")
         em.stop()
@@ -37,7 +43,9 @@ def measure(times=1):
         end = em.perf_events.events[-1].time if len(em.perf_events.events) > 1 else em.bat_events.events[-1].time  # first s
         p, c, z = em.get_consumption_in_between(begin, end)
         out_file = em.save_final_report(begin)
+        print(f"out file {out_file}")
         print(f"Energy consumed: {p} Joules")
+        time.sleep(args_obj.sleep_time)
 
 
 def fetch_res_files():
@@ -59,9 +67,9 @@ def extract_values_from_files(files):
         for method, invs in j_file['invoked_methods'].items():
             mname = method.replace(rm_val, "")
             for invok in invs.values():
-                #print(method)
-                #print(invok)
-                function_dict[mname] = {'times': [invok['elapsed_time']], 'energies': [invok['cpu']]} if mname not in function_dict else {'times': function_dict[mname]['times'] + [invok['elapsed_time']] , 'energies': function_dict[mname]['energies'] + [invok['cpu']]}
+                print(invok)
+                if 'elapsed_time' in invok:
+                    function_dict[mname] = {'times': [invok['elapsed_time']], 'energies': [invok['cpu']]} if mname not in function_dict else {'times': function_dict[mname]['times'] + [invok['elapsed_time']] , 'energies': function_dict[mname]['energies'] + [invok['cpu']]}
     return function_dict
 
 def gen_box_plot(key_list, list_of_lists, title="ai"):
@@ -95,6 +103,7 @@ def gen_box_plot(key_list, list_of_lists, title="ai"):
     plt.suptitle(title)
     plt.show()
 
+
 def plot_res(res):
     filtro = ""
     keys = [ x for x in list(res.keys()) if filtro in x]
@@ -104,11 +113,102 @@ def plot_res(res):
     gen_box_plot(keys, consumptions, "energy")
     #gen_box_plot(['aaa', 'bbb'], [[1,2],[3,5]])
 
-def main():
-    measure(times=1)
+def build_apks(args_obj):
+    print("building")
+    res, o , e = execute_shell_command(build_build_cmd(args_obj))
+    print(res)
+    print(o)
+
+def install_apks(build_type="debug"):
+    print("installing apks")
+    res, o , e = execute_shell_command(f"adb install -g -r app/build/outputs/apk/debug/app-{build_type}*")
+    print(res)
+    print(o)
+    print(e)
+    res, o , e = execute_shell_command(f"adb install -g -r app/build/outputs/apk/androidTest/debug/app-{build_type}*")
+    print(res)
+    print(o)
+    print(e)
+    
+
+def uninstall_apks(args_obj):
+    print("uninstalling apks")
+    execute_shell_command("adb shell pm uninstall com.example.cryptobenchmark")
+    execute_shell_command(f"adb shell pm uninstall {args_obj.test_package}")
+
+
+def main(args_obj):
+    if args_obj.build: 
+        build_apks(args_obj)
+    if args_obj.install:
+        install_apks()
+    measure(args_obj)
+    print("medi taremi")
     files = fetch_res_files()
-    fc =extract_values_from_files(files)
-    plot_res(fc)
+    fc = extract_values_from_files(files)
+    print(json.dumps(fc, indent=1))
+    print("ja foi")
+    if args_obj.plot:
+        plot_res(fc)
+    if args_obj.uninstall:
+        uninstall_apks()
+
+
+def build_exec_cmd(args_obj):
+    return CMD.format(test_class=args_obj.test_class, 
+    test_runner=args_obj.test_runner,
+    test_package=args_obj.test_package)
+
+
+def build_build_cmd(args_obj):
+    prop_keys = get_keys_of_prop_file()
+    prop_fmt_keys = list(filter(lambda x: x.upper() in prop_keys, args_obj.__dict__.keys()))
+    res = " ".join([f"-P{k.upper()}={args_obj.__dict__[k]}" for k in prop_fmt_keys])
+    return f"./gradlew assembleDebug assembleAndroidTest {res}"
+
+
+def fetch_from_gradle_prop_file(key, default_val):
+    with open('gradle.properties') as f:
+        for line in f:
+                # Split the line into a key-value pair
+                try:
+                    k, v = line.strip().split('=')
+                    if k == key:
+                        return v
+                except:
+                    continue
+               
+        # If no matching key is found, return the default value
+        return default_val
+
+
+def get_keys_of_prop_file():
+    x = []
+    with open('gradle.properties') as f:
+        for line in f:
+                # Split the line into a key-value pair
+                try:
+                    k = line.strip().split('=')[0]
+                    x.append(k)
+                except:
+                    continue
+        return x
+
 
 if __name__ == '__main__':
-    main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-b", "--build", help="build", action='store_true', default=False)
+    parser.add_argument("-i", "--install", help="install apks", action='store_true', default=True)
+    parser.add_argument("-u", "--uninstall", help="uninstall apks", action='store_true', default=True)
+    parser.add_argument("-p", "--plot", help="plot results", action='store_true', default=False)
+    parser.add_argument("-c", "--test_class", help="test class", default="DigestTest", choices=["MeasureDigestTest",
+    "MeasureHMACTest", "MeasureSymmetricTest", "MeasureSymmetricDecryptTest"])
+    parser.add_argument("-r", "--test_runner", help="unit test runner", default="android.support.test.runner.AndroidJUnitRunner", choices=["android.support.test.runner.AndroidJUnitRunner"])
+    parser.add_argument("-tp", "--test_package", help="test package",  default="com.example.cryptobenchmark.test")
+    parser.add_argument("-nt", "--n_times", help="times to repeat each execution",  default=fetch_from_gradle_prop_file("N_TIMES", 500), type=int)
+    parser.add_argument("-s", "--sleep_time", help="time to sleep betweeen each execution",  default=3, type=int)
+    parser.add_argument("-pv", "--provider", help="crypto provider", default=fetch_from_gradle_prop_file("PROVIDER", "AndroidOpenSSL"), type=str)
+    parser.add_argument("-is", "--input_size", help="input size",  default=fetch_from_gradle_prop_file("INPUT_SIZE", 128), type=int)
+    parser.add_argument("-kl", "--key-len", help="key length",  default=fetch_from_gradle_prop_file("KEY_LEN", 128), type=int)
+    args = parser.parse_args()
+    main(args_obj=args)

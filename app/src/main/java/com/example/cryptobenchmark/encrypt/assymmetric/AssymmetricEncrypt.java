@@ -123,4 +123,19 @@ public class AssymmetricEncrypt {
         }
     }
 
+    public static Map.Entry<String, IvParameterSpec> encrypt_RSA(String message, Key key, String provider) {
+        Cipher cipher = null;
+        byte[] ciphertext = null;
+        try {
+            cipher = Cipher.getInstance("RSA", provider);
+            cipher.init(Cipher.ENCRYPT_MODE, key);
+            ciphertext = cipher.doFinal(message.getBytes());
+            return new AbstractMap.SimpleEntry<>(byteArrayToString(ciphertext), new IvParameterSpec(new byte[]{}));
+
+        } catch (NoSuchProviderException | NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | IllegalBlockSizeException | BadPaddingException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
 }

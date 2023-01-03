@@ -19,10 +19,10 @@ public class AssymmetricEncryptKeyGen {
 
         //We are creating the key pair with sign and verify purposes
         KeyGenParameterSpec parameterSpec = new KeyGenParameterSpec.Builder("cryptobenchmark",
-                KeyProperties.PURPOSE_SIGN | KeyProperties.PURPOSE_DECRYPT )
+                KeyProperties.PURPOSE_SIGN | KeyProperties.PURPOSE_DECRYPT | KeyProperties.PURPOSE_ENCRYPT)
                 .setUserAuthenticationRequired(false)
                 .setBlockModes(KeyProperties.BLOCK_MODE_ECB)
-                .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
+                .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_RSA_PKCS1)
                 .setRandomizedEncryptionRequired(false)
                 .setKeySize(keylen)
                 .build();
@@ -49,6 +49,25 @@ public class AssymmetricEncryptKeyGen {
 
         //Initialization of key generator with the parameters we have specified above
         keyPairGenerator.initialize(parameterSpec);*/
+        //Generates the key pair
+        return keyPairGenerator.genKeyPair();
+    }
+
+    public static KeyPair gen_key_RSA(int keylen, String mode, String padding) throws NoSuchAlgorithmException, InvalidAlgorithmParameterException {
+        KeyPairGenerator keyPairGenerator = java.security.KeyPairGenerator.getInstance(KeyProperties.KEY_ALGORITHM_RSA);
+        //keyPairGenerator.initialize(keylen);
+        //We are creating the key pair with sign and verify purposes
+        KeyGenParameterSpec parameterSpec = new KeyGenParameterSpec.Builder("cryptobenchmark1",
+                KeyProperties.PURPOSE_SIGN | KeyProperties.PURPOSE_DECRYPT| KeyProperties.PURPOSE_ENCRYPT )
+                .setUserAuthenticationRequired(false)
+                .setBlockModes(mode)
+                .setEncryptionPaddings(padding)
+                .setRandomizedEncryptionRequired(false)
+                .setKeySize(keylen)
+                .build();
+
+        //Initialization of key generator with the parameters we have specified above
+        keyPairGenerator.initialize(parameterSpec);
         //Generates the key pair
         return keyPairGenerator.genKeyPair();
     }

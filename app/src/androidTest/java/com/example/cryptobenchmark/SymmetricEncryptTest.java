@@ -38,7 +38,8 @@ import static org.junit.Assert.assertNotNull;
 @RunWith(AndroidJUnit4.class)
 public class SymmetricEncryptTest {
 
-    public void test_encrypt_algorithm(String algorithm, int times, String[] params){
+
+    public void test_decrypt_algorithm(String algorithm, int times, String[] params){
         SymmetricEncrypt se = new SymmetricEncrypt(new DeviceCryptoPrimitives());
         for (int i = 0; i < times ; i++) {
             String target = i > params.length-1 ? params[i % params.length] : params[i];
@@ -46,6 +47,7 @@ public class SymmetricEncryptTest {
             Map<String, IvParameterSpec> m = se.encrypt_all(target, algorithm, pk,"AndroidOpenSSL");
         }
     }
+
 
     @Test
     public void test_AES_AndroidKeyStore() {

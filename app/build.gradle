@@ -4,15 +4,20 @@ plugins {
 }
 android {
     compileSdkVersion 27
-
+    buildToolsVersion '27.0.3'
     defaultConfig {
         minSdkVersion 27
         targetSdkVersion 27 // DO NOT CHANGE: https://android-developers.googleblog.com/2018/03/cryptography-changes-in-android-p.html
         versionCode 1
         versionName "1.0"
         multiDexEnabled true
-
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        buildConfigField "String", "KEY_LEN", "\"$KEY_LEN\""
+        buildConfigField "String", "INPUT_SIZE", "\"$INPUT_SIZE\""
+        buildConfigField "String", "N_TIMES", "\"$N_TIMES\""
+        buildConfigField "String", "PROVIDER", "\"$PROVIDER\""
+        buildConfigField "String", "WARM_UP_TIME", "\"$WARM_UP_TIME\""
+        buildConfigField "String", "COOL_DOWN_TIME", "\"$COOL_DOWN_TIME\""
     }
 
     buildTypes {
@@ -31,19 +36,17 @@ android {
         }
 
     }
-    buildToolsVersion '27.0.3'
-
 }
 
 dependencies {
-    // 'io.github.raphael28:hunter-debug-library:1.0.1'
-    implementation 'io.github.greensoftwarelab:hunter-emanafa-library:1.0.1'
+    implementation 'io.github.raphael28:hunter-debug-library:1.0.1'
+    //implementation 'io.github.greensoftwarelab:hunter-emanafa-library:1.0.1'
     implementation 'com.android.support:appcompat-v7:27.1.1'
     implementation 'com.android.support:design:27.1.1'
     testImplementation 'junit:junit:4+'
     testImplementation("org.json:json:20210307")
     //testImplementation 'org.robolectric:robolectric:4.6.1'
-    androidTestImplementation 'io.github.greensoftwarelab:hunter-emanafa-library:1.0.1'
+    androidTestImplementation 'io.github.raphael28:hunter-debug-library:1.0.1'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.3'
 }

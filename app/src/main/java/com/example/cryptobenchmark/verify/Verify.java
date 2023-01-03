@@ -83,7 +83,6 @@ public class Verify extends PrimitiveStore {
         int i = 0;
         for(String primitive : providers.keySet()){
             for (String provider : providers.get(primitive)){
-                System.out.println(provider);
                 res = verify(message, signatures.get(i), primitive, key, provider);;
                 if (!res) {
                     return false;

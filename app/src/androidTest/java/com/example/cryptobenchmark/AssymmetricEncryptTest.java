@@ -6,6 +6,7 @@ import com.example.cryptobenchmark.decrypt.assymmetric.AssymmetricDecrypt;
 import com.example.cryptobenchmark.encrypt.assymmetric.AssymmetricEncrypt;
 import com.example.cryptobenchmark.keygen.assymmetric.AssymmetricEncryptKeyGen;
 
+import com.example.cryptobenchmark.misc.CryptoProvider;
 import com.example.cryptobenchmark.misc.DeviceCryptoPrimitives;
 import com.example.cryptobenchmark.misc.datatypes.StringType;
 
@@ -14,9 +15,13 @@ import org.junit.runner.RunWith;
 
 import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyPair;
+import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.util.Map;
+import java.util.Set;
+
+import javax.crypto.Cipher;
 import javax.crypto.spec.IvParameterSpec;
 
 import static org.junit.Assert.assertEquals;
@@ -31,20 +36,143 @@ import static org.junit.Assert.assertNotNull;
 @RunWith(AndroidJUnit4.class)
 public class AssymmetricEncryptTest {
 
+    public static int KEY_LEN = 2048; // 1024 -> 117, 2048 -> 245
+    public static int PLAINTEXT_LEN = 120;
+    public static String RSA_MODE = "ECB";
+    public static String PROVIDER = "AndroidKeyStoreBCWorkaround";
+
+
     @Test
     public void test_sample_rsa() throws InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchProviderException {
-        KeyPair kp = AssymmetricEncryptKeyGen.gen_key_RSA_AndroidKeyStore(128);
+        String algo = "RSA", mode = "ECB", padding = "PKCS1PADDING";
+        //KeyPair kp = AssymmetricEncryptKeyGen.gen_key_RSA_AndroidKeyStore(512);
+        KeyPair kp = AssymmetricEncryptKeyGen.gen_key_RSA(KEY_LEN, mode, padding);
         assertNotNull(kp);
         DeviceCryptoPrimitives dcp = new DeviceCryptoPrimitives();
         AssymmetricEncrypt ae = new AssymmetricEncrypt(dcp);
         AssymmetricDecrypt ad = new AssymmetricDecrypt(dcp);
-        String msg = (String) StringType.genRandomWithSize(32).getValue();
-        Map.Entry<String, IvParameterSpec> res = ae.encrypt_RSA(msg, "", "", kp.getPublic(), "AndroidKeyStoreBCWorkaround");
+        String msg = (String) StringType.genRandomWithSize(PLAINTEXT_LEN).getValue();
+        Map.Entry<String, IvParameterSpec> res = ae.encrypt_RSA(msg, mode, padding, kp.getPublic(), "AndroidKeyStoreBCWorkaround");
         assertNotNull(res);
-        String decrypted_plaintext = ad.decrypt_RSA(res.getKey(), "", "", kp.getPrivate(), "AndroidKeyStoreBCWorkaround", res.getValue());
-        System.out.println(msg);
-        System.out.println(decrypted_plaintext);
+        String decrypted_plaintext = ad.decrypt_RSA(res.getKey(), mode, padding, kp.getPrivate(), "AndroidKeyStoreBCWorkaround", res.getValue());
         assertEquals(msg, decrypted_plaintext);
+    }
+
+    @Test
+    public void test_rsa_PKCS1PADDING() throws InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchProviderException {
+        String algo = "RSA", mode = "ECB", padding = "PKCS1PADDING";
+        //KeyPair kp = AssymmetricEncryptKeyGen.gen_key_RSA_AndroidKeyStore(512);
+        KeyPair kp = AssymmetricEncryptKeyGen.gen_key_RSA(KEY_LEN, mode, padding);
+        DeviceCryptoPrimitives dcp = new DeviceCryptoPrimitives();
+        AssymmetricEncrypt ae = new AssymmetricEncrypt(dcp);
+        AssymmetricDecrypt ad = new AssymmetricDecrypt(dcp);
+        String msg = (String) StringType.genRandomWithSize(PLAINTEXT_LEN).getValue();
+        Map.Entry<String, IvParameterSpec> res = ae.encrypt_RSA(msg, mode, padding, kp.getPublic(), "AndroidKeyStoreBCWorkaround");
+        assertNotNull(res);
+        String decrypted_plaintext = ad.decrypt_RSA(res.getKey(), mode, padding, kp.getPrivate(), "AndroidKeyStoreBCWorkaround", res.getValue());
+        assertEquals(msg, decrypted_plaintext);
+    }
+
+    @Test
+    public void test_rsa_OAEPPADDING() throws InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchProviderException {
+        String algo = "RSA", mode = "ECB", padding = "OAEPPADDING";
+        //KeyPair kp = AssymmetricEncryptKeyGen.gen_key_RSA_AndroidKeyStore(512);
+        KeyPair kp = AssymmetricEncryptKeyGen.gen_key_RSA(KEY_LEN, mode, padding);
+        DeviceCryptoPrimitives dcp = new DeviceCryptoPrimitives();
+        AssymmetricEncrypt ae = new AssymmetricEncrypt(dcp);
+        AssymmetricDecrypt ad = new AssymmetricDecrypt(dcp);
+        String msg = (String) StringType.genRandomWithSize(PLAINTEXT_LEN).getValue();
+        Map.Entry<String, IvParameterSpec> res = ae.encrypt_RSA(msg, mode, padding, kp.getPublic(), "AndroidKeyStoreBCWorkaround");
+        assertNotNull(res);
+        String decrypted_plaintext = ad.decrypt_RSA(res.getKey(), mode, padding, kp.getPrivate(), "AndroidKeyStoreBCWorkaround", res.getValue());
+        assertEquals(msg, decrypted_plaintext);
+    }
+
+    @Test
+    public void test_rsa_OAEPWITHSHA_1ANDMGF1PADDING() throws InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchProviderException {
+        String algo = "RSA", mode = "ECB", padding = "OAEPWITHSHA-1ANDMGF1PADDING";
+        //KeyPair kp = AssymmetricEncryptKeyGen.gen_key_RSA_AndroidKeyStore(512);
+        KeyPair kp = AssymmetricEncryptKeyGen.gen_key_RSA(KEY_LEN, mode, padding);
+        DeviceCryptoPrimitives dcp = new DeviceCryptoPrimitives();
+        AssymmetricEncrypt ae = new AssymmetricEncrypt(dcp);
+        AssymmetricDecrypt ad = new AssymmetricDecrypt(dcp);
+        String msg = (String) StringType.genRandomWithSize(PLAINTEXT_LEN).getValue();
+        Map.Entry<String, IvParameterSpec> res = ae.encrypt_RSA(msg, mode, padding, kp.getPublic(), "AndroidKeyStoreBCWorkaround");
+        assertNotNull(res);
+        String decrypted_plaintext = ad.decrypt_RSA(res.getKey(), mode, padding, kp.getPrivate(), "AndroidKeyStoreBCWorkaround", res.getValue());
+        assertEquals(msg, decrypted_plaintext);
+    }
+
+
+
+    @Test
+    public void test_rsa_OAEPWITHSHA_224ANDMGF1PADDING() throws InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchProviderException {
+        String algo = "RSA", mode = "ECB", padding = "OAEPWITHSHA-224ANDMGF1PADDING";
+        //KeyPair kp = AssymmetricEncryptKeyGen.gen_key_RSA_AndroidKeyStore(512);
+        KeyPair kp = AssymmetricEncryptKeyGen.gen_key_RSA(KEY_LEN, mode, padding);
+        DeviceCryptoPrimitives dcp = new DeviceCryptoPrimitives();
+        AssymmetricEncrypt ae = new AssymmetricEncrypt(dcp);
+        AssymmetricDecrypt ad = new AssymmetricDecrypt(dcp);
+        String msg = (String) StringType.genRandomWithSize(PLAINTEXT_LEN).getValue();
+        Map.Entry<String, IvParameterSpec> res = ae.encrypt_RSA(msg, mode, padding, kp.getPublic(), "AndroidKeyStoreBCWorkaround");
+        assertNotNull(res);
+        String decrypted_plaintext = ad.decrypt_RSA(res.getKey(), mode, padding, kp.getPrivate(), "AndroidKeyStoreBCWorkaround", res.getValue());
+        assertEquals(msg, decrypted_plaintext);
+    }
+    @Test
+    public void test_rsa_OAEPWITHSHA_256ANDMGF1PADDING() throws InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchProviderException {
+        String algo = "RSA", mode = "ECB", padding = "OAEPWITHSHA-256ANDMGF1PADDING";
+        //KeyPair kp = AssymmetricEncryptKeyGen.gen_key_RSA_AndroidKeyStore(512);
+        KeyPair kp = AssymmetricEncryptKeyGen.gen_key_RSA(KEY_LEN, mode, padding);
+        DeviceCryptoPrimitives dcp = new DeviceCryptoPrimitives();
+        AssymmetricEncrypt ae = new AssymmetricEncrypt(dcp);
+        AssymmetricDecrypt ad = new AssymmetricDecrypt(dcp);
+        String msg = (String) StringType.genRandomWithSize(PLAINTEXT_LEN).getValue();
+        Map.Entry<String, IvParameterSpec> res = ae.encrypt_RSA(msg, mode, padding, kp.getPublic(), "AndroidKeyStoreBCWorkaround");
+        assertNotNull(res);
+        String decrypted_plaintext = ad.decrypt_RSA(res.getKey(), mode, padding, kp.getPrivate(), "AndroidKeyStoreBCWorkaround", res.getValue());
+        assertEquals(msg, decrypted_plaintext);
+    }
+
+    @Test
+    public void test_rsa_OAEPWITHSHA_384ANDMGF1PADDING() throws InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchProviderException {
+        String algo = "RSA", mode = "ECB", padding = "OAEPWITHSHA-384ANDMGF1PADDING";
+        //KeyPair kp = AssymmetricEncryptKeyGen.gen_key_RSA_AndroidKeyStore(512);
+        KeyPair kp = AssymmetricEncryptKeyGen.gen_key_RSA(KEY_LEN, mode, padding);
+        DeviceCryptoPrimitives dcp = new DeviceCryptoPrimitives();
+        AssymmetricEncrypt ae = new AssymmetricEncrypt(dcp);
+        AssymmetricDecrypt ad = new AssymmetricDecrypt(dcp);
+        String msg = (String) StringType.genRandomWithSize(PLAINTEXT_LEN).getValue();
+        Map.Entry<String, IvParameterSpec> res = ae.encrypt_RSA(msg, mode, padding, kp.getPublic(), "AndroidKeyStoreBCWorkaround");
+        assertNotNull(res);
+        String decrypted_plaintext = ad.decrypt_RSA(res.getKey(), mode, padding, kp.getPrivate(), "AndroidKeyStoreBCWorkaround", res.getValue());
+        assertEquals(msg, decrypted_plaintext);
+    }
+
+    @Test
+    public void test_rsa_OAEPWITHSHA_512ANDMGF1PADDING() throws InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchProviderException {
+        String algo = "RSA", mode = "ECB", padding = "OAEPWITHSHA-512ANDMGF1PADDING";
+        //KeyPair kp = AssymmetricEncryptKeyGen.gen_key_RSA_AndroidKeyStore(512);
+        KeyPair kp = AssymmetricEncryptKeyGen.gen_key_RSA(KEY_LEN, mode, padding);
+        DeviceCryptoPrimitives dcp = new DeviceCryptoPrimitives();
+        AssymmetricEncrypt ae = new AssymmetricEncrypt(dcp);
+        AssymmetricDecrypt ad = new AssymmetricDecrypt(dcp);
+        String msg = (String) StringType.genRandomWithSize(PLAINTEXT_LEN).getValue();
+        Map.Entry<String, IvParameterSpec> res = ae.encrypt_RSA(msg, mode, padding, kp.getPublic(), "AndroidKeyStoreBCWorkaround");
+        assertNotNull(res);
+        String decrypted_plaintext = ad.decrypt_RSA(res.getKey(), mode, padding, kp.getPrivate(), "AndroidKeyStoreBCWorkaround", res.getValue());
+        assertEquals(msg, decrypted_plaintext);
+    }
+
+    @Test
+    public void test_rsa_xx() throws InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchProviderException {
+        String algo = "RSA", mode = "ECB", padding = "OAEPPADDING";
+        //KeyPair kp = AssymmetricEncryptKeyGen.gen_key_RSA_AndroidKeyStore(512);
+        KeyPair kp = AssymmetricEncryptKeyGen.gen_key_RSA(KEY_LEN, mode, padding);
+        assertNotNull(kp);
+        DeviceCryptoPrimitives dcp = new DeviceCryptoPrimitives();
+        Map<String, Set<CryptoProvider>> m = dcp.getProvidersImplementingAlgorithm("RSA");
+        System.out.println(m);
     }
 
 }

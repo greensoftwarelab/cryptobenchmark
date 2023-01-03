@@ -3,6 +3,7 @@ package com.example.cryptobenchmark.digest;
 import com.example.cryptobenchmark.misc.CryptoPrimitive;
 import com.example.cryptobenchmark.misc.CryptoProvider;
 import com.example.cryptobenchmark.misc.DeviceCryptoPrimitives;
+import com.hunter.library.debug.HunterDebug;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -11,6 +12,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -28,7 +30,7 @@ public class Digest {
     Map<String, Set<String>> digestsProviders = new HashMap<>();
     private static Set<String> digestAlgorithms = new HashSet<>(Arrays.asList(
             "MD5", "SHA1", "SHA224", "SHA226", "SHA256", "SHA384", "SHA512",
-            "SHA-1", "SHA-224", "SHA-226", "SHA-256", "SHA-384", "SHA-512"
+            "MD-5", "SHA-1", "SHA-224", "SHA-226", "SHA-256", "SHA-384", "SHA-512"
     ));
     private static Set<String> excludedProviders = new HashSet<>(Arrays.asList("BC"));
 
@@ -36,7 +38,7 @@ public class Digest {
     public Digest(DeviceCryptoPrimitives dcp){
         for (CryptoProvider cp : dcp.getDeviceProviders().values()){
             for (String algoId : digestAlgorithms){
-                List<String> matchingPrimitives =  cp.getProviderPrimitives().values().stream().filter(x -> x.getSimpleName().matches(""+algoId+".*")).map(CryptoPrimitive::getPrimitiveName).collect(Collectors.toList());
+                List<String> matchingPrimitives =  cp.getProviderPrimitives().values().stream().filter(x -> x.getPrimitiveName().equals(algoId)).map(CryptoPrimitive::getPrimitiveName).collect(Collectors.toList());
                 for (String s : matchingPrimitives){
                     addPrimitive(s, cp.getProviderName());
                 }
@@ -74,25 +76,48 @@ public class Digest {
         this.digests_providers.put( "SHA512", basicTriple);
     }*/
 
-    /*
-    *  -------------------- MD5 --------------------
-     * */
-    public List<String> digest_all(String msg, String algorithm){
-        if( ! this.digestsProviders.containsKey(algorithm) ){
-            return null;
-        }
-        Set<String> md5_providers = this.digestsProviders.get(algorithm);
+    public List<String> digest_all(String msg){
         List<String> x = new ArrayList<>();
-        for(String provider : md5_providers){
-            Method method = getMethod(this.getClass().getName(), String.format("digest_%s", algorithm),  new Class[]{ String.class, String.class});
-            try {
-                x.add((String) method.invoke(this, new Object[]{msg, provider}));
-            } catch (IllegalAccessException | InvocationTargetException e) {
-                e.printStackTrace();
+        for(String algorithm : this.digestsProviders.keySet()){
+            for(String provider : this.digestsProviders.get(algorithm)){
+                x.add(digest(msg, algorithm, provider));
             }
         }
         return x;
     }
+
+
+    public List<String> digest_all(String msg, String algorithm){
+        if( ! this.digestsProviders.containsKey(algorithm) ){
+            return null;
+        }
+        Set<String> algo_providers = this.digestsProviders.get(algorithm);
+        List<String> x = new ArrayList<>();
+        for(String provider : algo_providers){
+            x.add(digest(msg, algorithm, provider));
+            /*Method method = getMethod(this.getClass().getName(), String.format("digest_%s", algorithm),  new Class[]{ String.class, String.class});
+            try {
+                x.add((String) method.invoke(this, new Object[]{msg, provider}));
+            } catch (IllegalAccessException | InvocationTargetException e) {
+                e.printStackTrace();
+            }*/
+        }
+        return x;
+    }
+
+    public static String digest(String message, String algo, String provider){
+        try {
+            MessageDigest digest = java.security.MessageDigest
+                    .getInstance(algo, provider);
+            digest.update(StringToByteArray(message));
+            return byteArrayToString(digest.digest());
+
+        } catch (NoSuchAlgorithmException | NoSuchProviderException e) {
+            e.printStackTrace();
+        }
+        return "";
+    }
+
 
     public static String digest_MD5(String message, String provider){
         try {

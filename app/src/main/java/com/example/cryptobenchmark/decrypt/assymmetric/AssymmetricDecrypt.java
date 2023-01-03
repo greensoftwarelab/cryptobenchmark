@@ -95,6 +95,19 @@ public class AssymmetricDecrypt {
         try {
             cipher = Cipher.getInstance(String.format("RSA/%s/%s", mode, padding), provider);
             cipher.init(Cipher.DECRYPT_MODE, key);
+            byte[] plainText = cipher.doFinal(StringToByteArray(message));
+            return new String(plainText);
+        } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | NoSuchProviderException | IllegalBlockSizeException | BadPaddingException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public static String decrypt_RSA(String message, Key key, String provider, IvParameterSpec iv){
+        Cipher cipher = null;
+        try {
+            cipher = Cipher.getInstance("RSA", provider);
+            cipher.init(Cipher.DECRYPT_MODE, key);
             byte[] plainText = cipher.doFinal(message.getBytes());
             return byteArrayToString(plainText);
         } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | NoSuchProviderException | IllegalBlockSizeException | BadPaddingException e) {
@@ -102,4 +115,6 @@ public class AssymmetricDecrypt {
         }
         return null;
     }
+
+
 }

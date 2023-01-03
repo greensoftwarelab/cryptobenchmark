@@ -4,8 +4,12 @@ import android.support.test.runner.AndroidJUnit4;
 
 import com.example.cryptobenchmark.digest.Digest;
 import com.example.cryptobenchmark.misc.DeviceCryptoPrimitives;
+import com.example.cryptobenchmark.misc.datatypes.DataType;
 import com.example.cryptobenchmark.misc.datatypes.StringType;
+import com.hunter.library.debug.HunterDebug;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -18,47 +22,85 @@ import org.junit.runner.RunWith;
 @RunWith(AndroidJUnit4.class)
 public class DigestTest {
 
-   public void test_digest_algorithm(String algorithm, int times, String[] params){
-        Digest d = new Digest(new DeviceCryptoPrimitives());
-        for (int i = 0; i < times ; i++) {
-            String target = i > params.length-1 ? params[i % params.length] : params[i];
-            d.digest_all(target, algorithm);
+    public static int inputSize = Integer.parseInt(BuildConfig.INPUT_SIZE);
+    public static int nTimes = Integer.parseInt(BuildConfig.N_TIMES);
+    public static int warmup_time = Integer.parseInt(BuildConfig.WARM_UP_TIME);
+    public static int cool_down_time = Integer.parseInt(BuildConfig.COOL_DOWN_TIME);
+    public static String provider =BuildConfig.PROVIDER;
+    public static String[] inputs =  gen_random_workload(inputSize, nTimes);
+    public static DeviceCryptoPrimitives deviceCryptoPrimitives = new DeviceCryptoPrimitives();
+    public static Digest digest = new Digest(deviceCryptoPrimitives);
+
+    @Before
+    public void before_tests(){
+        try {
+            System.out.println("before");
+            Thread.sleep(warmup_time);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
     }
 
+    @After
+    public void after_tests(){
+        try {
+            System.out.println("after");
+            Thread.sleep(cool_down_time);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static String[] gen_random_workload(int size, int times){
+        String[] res = new String[times];
+        DataType[] dt = StringType.genRandomWithSize(size, times);
+        for (int i = 0; i < dt.length; i++) {
+            res[i] = ((String) dt[i].getValue());
+        }
+        return res;
+    }
+
+   public void execute_digest_algorithm(String algorithm, String[] params, String provider){
+        for (int i = 0; i < params.length ; i++) {
+            //String target = i > params.length-1 ? params[i % (params.length)] : params[i];
+            digest.digest( params[i], algorithm, provider);
+        }
+    }
+
+    @HunterDebug
     @Test
     public void test_md5(){
-        test_digest_algorithm("MD5", 25, new String[]{ (String) StringType.genRandomWithSize(64).getValue() } );
+        execute_digest_algorithm("MD5", inputs, provider);
     }
 
+    @HunterDebug
     @Test
     public void test_sha1(){
-        test_digest_algorithm("SHA1", 25,  new String[]{ (String) StringType.genRandomWithSize(64).getValue() } );
+        execute_digest_algorithm("SHA1", inputs, provider);
     }
+
+    @HunterDebug
     @Test
     public void test_sha224(){
-        test_digest_algorithm("SHA224", 25,  new String[]{ (String) StringType.genRandomWithSize(64).getValue() } );
+        execute_digest_algorithm("SHA224", inputs, provider);
     }
+
+    @HunterDebug
     @Test
     public void test_sha256(){
-        test_digest_algorithm("SHA256", 25,  new String[]{ (String) StringType.genRandomWithSize(64).getValue() } );
-    }
-    @Test
-    public void test_sha384(){
-        test_digest_algorithm("SHA384", 25,  new String[]{ (String) StringType.genRandomWithSize(64).getValue() } );
-    }
-    @Test
-    public void test_sha512(){
-        test_digest_algorithm("SHA512", 25,  new String[]{ (String) StringType.genRandomWithSize(64).getValue() } );
+        execute_digest_algorithm("SHA256", inputs, provider);
     }
 
     @Test
-    public void test_all() {
-       test_md5();
-       test_sha1();
-       test_sha224();
-       test_sha256();
-       test_sha384();
-       test_sha512();
+    @HunterDebug
+    public void test_sha384(){
+        execute_digest_algorithm("SHA384", inputs, provider);
     }
+
+    @HunterDebug
+    @Test
+    public void test_sha512(){
+        execute_digest_algorithm("SHA512", inputs, provider);
+    }
+
 }
