@@ -48,9 +48,9 @@ public class Sign extends PrimitiveStore {
         addPrimitives(primitives);
     }
 
-    public static String sign(String message,String algo, PrivateKey key){
+    public static String sign(String message, String fullAlgorithmDefinition, PrivateKey key){
         try {
-            Signature s = Signature.getInstance(algo);
+            Signature s = Signature.getInstance(fullAlgorithmDefinition);
             s.initSign(key);
             s.update(message.getBytes());
             return byteArrayToString(s.sign());

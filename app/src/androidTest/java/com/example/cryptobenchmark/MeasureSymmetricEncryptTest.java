@@ -1,33 +1,21 @@
 package com.example.cryptobenchmark;
 
 import android.support.test.runner.AndroidJUnit4;
-
-import com.example.cryptobenchmark.decrypt.symmetric.SymmetricDecrypt;
-import com.example.cryptobenchmark.decrypt.symmetric.DecryptOperation;
+import com.example.cryptobenchmark.encrypt.symmetric.SymmetricEncrypt;
+import com.example.cryptobenchmark.encrypt.symmetric.EncryptOperation;
 import com.hunter.library.debug.HunterDebug;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import javax.crypto.SecretKey;
-import javax.crypto.spec.IvParameterSpec;
+
+import static com.example.cryptobenchmark.keygen.symmetric.SymmetricKeyGen.gen_key_AES;
 
 
 @RunWith(AndroidJUnit4.class)
-public class MeasureSymmetricDecryptTest extends MeasureTest {
+public class MeasureSymmetricEncryptTest extends MeasureTest {
 
-    public static IvParameterSpec iv = new IvParameterSpec(new byte[8]);
-    String[] params = MeasureTest.INPUT_MESSAGES;
+    String[] INPUT_PARAMS = MeasureTest.INPUT_MESSAGES;
     SecretKey SECRET_KEY = gen_symmetric_key(ALGORITHM, keyLen, PROVIDER, MODE, PADDING);
-
-
-    public static void decrypt(DecryptOperation sdo, SecretKey sk, String[] params,
-                               String provider, String padding, String mode, IvParameterSpec iv) throws Exception {
-        for (String param : params) {
-            String res = sdo.decrypt(param, mode, padding, sk, provider, iv);
-            if (res == null) {
-                throw new Exception("decyphered text is null");
-            }
-        }
-    }
 
     // CHACHA20
     @HunterDebug
@@ -37,10 +25,22 @@ public class MeasureSymmetricDecryptTest extends MeasureTest {
         String provider = "AndroidOpenSSL";
         String padd = "";
         String mode = "";
-        DecryptOperation deo = SymmetricDecrypt::decrypt_ChaCha20;
-        decrypt(deo, SECRET_KEY, params, provider, padd, mode, iv);
+        EncryptOperation so = SymmetricEncrypt::encrypt_ChaCha20;
+        encrypt_symmetric(so, SECRET_KEY, INPUT_PARAMS, provider, padd, mode);
     }
     // DES/ECB/PKCS5PADDING
+
+   /*
+    @HunterDebug
+    @Test
+    public void test_aes_solo() throws Exception {
+        String provider = "AndroidOpenSSL";
+        String padd = "";
+        String mode = "";
+        SecretKey sk = gen_key_AES(keyLen, mode, padd);
+        EncryptOperation so = SymmetricEncrypt::encrypt_AES;
+        so.encrypt(INPUT_PARAMS[0], "", "", sk, "");
+    }*/
 
     // AES GCM
     @Test
@@ -49,8 +49,8 @@ public class MeasureSymmetricDecryptTest extends MeasureTest {
         String mode = "GCM";
         String padd = "NOPADDING";
         String provider = "AndroidKeyStoreBCWorkaround";
-        DecryptOperation deo = SymmetricDecrypt::decrypt_AES;
-        decrypt(deo, SECRET_KEY, params, provider, padd, mode, iv);
+        EncryptOperation so = SymmetricEncrypt::encrypt_AES;
+        encrypt_symmetric(so, SECRET_KEY, INPUT_PARAMS, provider, padd, mode);
     }
 
     @Test
@@ -59,8 +59,8 @@ public class MeasureSymmetricDecryptTest extends MeasureTest {
         String mode = "GCM";
         String padd = "NOPADDING";
         String provider = "AndroidOpenSSL";
-        DecryptOperation deo = SymmetricDecrypt::decrypt_AES;
-        decrypt(deo, SECRET_KEY, params, provider, padd, mode, iv);
+        EncryptOperation so = SymmetricEncrypt::encrypt_AES;
+        encrypt_symmetric(so, SECRET_KEY, INPUT_PARAMS, provider, padd, mode);
     }
 
     // AES GCM - SIV
@@ -71,8 +71,8 @@ public class MeasureSymmetricDecryptTest extends MeasureTest {
         String mode = "GCM-SIV";
         String padd = "NOPADDING";
         String provider = "AndroidOpenSSL";
-        DecryptOperation deo = SymmetricDecrypt::decrypt_AES;
-        decrypt(deo, SECRET_KEY, params, provider, padd, mode, iv);
+        EncryptOperation so = SymmetricEncrypt::encrypt_AES;
+        encrypt_symmetric(so, SECRET_KEY, INPUT_PARAMS, provider, padd, mode);
     }
 
     // CBC
@@ -83,8 +83,8 @@ public class MeasureSymmetricDecryptTest extends MeasureTest {
         String mode = "CBC";
         String padd = "NOPADDING";
         String provider = "AndroidOpenSSL";
-        DecryptOperation deo = SymmetricDecrypt::decrypt_AES;
-        decrypt(deo, SECRET_KEY, params, provider, padd, mode, iv);
+        EncryptOperation so = SymmetricEncrypt::encrypt_AES;
+        encrypt_symmetric(so, SECRET_KEY, INPUT_PARAMS, provider, padd, mode);
     }
 
     @Test
@@ -93,8 +93,8 @@ public class MeasureSymmetricDecryptTest extends MeasureTest {
         String mode = "CBC";
         String padd = "PKCS7PADDING";
         String provider = "AndroidOpenSSL";
-        DecryptOperation deo = SymmetricDecrypt::decrypt_AES;
-        decrypt(deo, SECRET_KEY, params, provider, padd, mode, iv);
+        EncryptOperation so = SymmetricEncrypt::encrypt_AES;
+        encrypt_symmetric(so, SECRET_KEY, INPUT_PARAMS, provider, padd, mode);
     }
 
     @Test
@@ -103,8 +103,8 @@ public class MeasureSymmetricDecryptTest extends MeasureTest {
         String mode = "CBC";
         String padd = "PKCS5PADDING";
         String provider = "AndroidOpenSSL";
-        DecryptOperation deo = SymmetricDecrypt::decrypt_AES;
-        decrypt(deo, SECRET_KEY, params, provider, padd, mode, iv);
+        EncryptOperation so = SymmetricEncrypt::encrypt_AES;
+        encrypt_symmetric(so, SECRET_KEY, INPUT_PARAMS, provider, padd, mode);
     }
 
     @Test
@@ -113,8 +113,8 @@ public class MeasureSymmetricDecryptTest extends MeasureTest {
         String mode = "ECB";
         String padd = "NOPADDING";
         String provider = "AndroidOpenSSL";
-        DecryptOperation deo = SymmetricDecrypt::decrypt_AES;
-        decrypt(deo, SECRET_KEY, params, provider, padd, mode, iv);
+        EncryptOperation so = SymmetricEncrypt::encrypt_AES;
+        encrypt_symmetric(so, SECRET_KEY, INPUT_PARAMS, provider, padd, mode);
     }
 
     @Test
@@ -123,8 +123,8 @@ public class MeasureSymmetricDecryptTest extends MeasureTest {
         String mode = "ECB";
         String padd = "NOPADDING";
         String provider = "AndroidKeyStoreBCWorkaround";
-        DecryptOperation deo = SymmetricDecrypt::decrypt_AES;
-        decrypt(deo, SECRET_KEY, params, provider, padd, mode, iv);
+        EncryptOperation so = SymmetricEncrypt::encrypt_AES;
+        encrypt_symmetric(so, SECRET_KEY, INPUT_PARAMS, provider, padd, mode);
     }
 
 
@@ -134,8 +134,8 @@ public class MeasureSymmetricDecryptTest extends MeasureTest {
         String mode = "ECB";
         String padd = "PKCS5PADDING";
         String provider = "AndroidOpenSSL";
-        DecryptOperation deo = SymmetricDecrypt::decrypt_AES;
-        decrypt(deo, SECRET_KEY, params, provider, padd, mode, iv);
+        EncryptOperation so = SymmetricEncrypt::encrypt_AES;
+        encrypt_symmetric(so, SECRET_KEY, INPUT_PARAMS, provider, padd, mode);
     }
 
     @Test
@@ -144,8 +144,8 @@ public class MeasureSymmetricDecryptTest extends MeasureTest {
         String mode = "ECB";
         String padd = "PKCS7PADDING";
         String provider = "AndroidOpenSSL";
-        DecryptOperation deo = SymmetricDecrypt::decrypt_AES;
-        decrypt(deo, SECRET_KEY, params, provider, padd, mode, iv);
+        EncryptOperation so = SymmetricEncrypt::encrypt_AES;
+        encrypt_symmetric(so, SECRET_KEY, INPUT_PARAMS, provider, padd, mode);
     }
 
     // CTR NO padding
@@ -156,8 +156,8 @@ public class MeasureSymmetricDecryptTest extends MeasureTest {
         String mode = "CTR";
         String padd = "NOPADDING";
         String provider = "AndroidOpenSSL";
-        DecryptOperation deo = SymmetricDecrypt::decrypt_AES;
-        decrypt(deo, SECRET_KEY, params, provider, padd, mode, iv);
+        EncryptOperation so = SymmetricEncrypt::encrypt_AES;
+        encrypt_symmetric(so, SECRET_KEY, INPUT_PARAMS, provider, padd, mode);
     }
 
     @Test
@@ -166,8 +166,8 @@ public class MeasureSymmetricDecryptTest extends MeasureTest {
         String mode = "CTR";
         String padd = "NOPADDING";
         String provider = "AndroidKeyStoreBCWorkaround";
-        DecryptOperation deo = SymmetricDecrypt::decrypt_AES;
-        decrypt(deo, SECRET_KEY, params, provider, padd, mode, iv);
+        EncryptOperation so = SymmetricEncrypt::encrypt_AES;
+        encrypt_symmetric(so, SECRET_KEY, INPUT_PARAMS, provider, padd, mode);
     }
 
     // DES - ECB
@@ -178,8 +178,8 @@ public class MeasureSymmetricDecryptTest extends MeasureTest {
         String mode = "ECB";
         String padd = "NOPADDING";
         String provider = "BC";
-        DecryptOperation deo = SymmetricDecrypt::decrypt_DES;
-        decrypt(deo, SECRET_KEY, params, provider, padd, mode, iv);
+        EncryptOperation so = SymmetricEncrypt::encrypt_DES;
+        encrypt_symmetric(so, SECRET_KEY, INPUT_PARAMS, provider, padd, mode);
     }
 
     @Test
@@ -188,8 +188,8 @@ public class MeasureSymmetricDecryptTest extends MeasureTest {
         String mode = "ECB";
         String padd = "PKCS5PADDING";
         String provider = "BC";
-        DecryptOperation deo = SymmetricDecrypt::decrypt_DES;
-        decrypt(deo, SECRET_KEY, params, provider, padd, mode, iv);
+        EncryptOperation so = SymmetricEncrypt::encrypt_DES;
+        encrypt_symmetric(so, SECRET_KEY, INPUT_PARAMS, provider, padd, mode);
     }
 
     @Test
@@ -198,8 +198,8 @@ public class MeasureSymmetricDecryptTest extends MeasureTest {
         String mode = "ECB";
         String padd = "PKCS7PADDING";
         String provider = "BC";
-        DecryptOperation deo = SymmetricDecrypt::decrypt_DES;
-        decrypt(deo, SECRET_KEY, params, provider, padd, mode, iv);
+        EncryptOperation so = SymmetricEncrypt::encrypt_DES;
+        encrypt_symmetric(so, SECRET_KEY, INPUT_PARAMS, provider, padd, mode);
     }
 
     // DES - CTR
@@ -209,8 +209,8 @@ public class MeasureSymmetricDecryptTest extends MeasureTest {
         String mode = "CTR";
         String padd = "NOPADDING";
         String provider = "BC";
-        DecryptOperation deo = SymmetricDecrypt::decrypt_DES;
-        decrypt(deo, SECRET_KEY, params, provider, padd, mode, iv);
+        EncryptOperation so = SymmetricEncrypt::encrypt_DES;
+        encrypt_symmetric(so, SECRET_KEY, INPUT_PARAMS, provider, padd, mode);
     }
 
     @Test
@@ -219,8 +219,8 @@ public class MeasureSymmetricDecryptTest extends MeasureTest {
         String mode = "CTR";
         String padd = "PKCS5PADDING";
         String provider = "BC";
-        DecryptOperation deo = SymmetricDecrypt::decrypt_DES;
-        decrypt(deo, SECRET_KEY, params, provider, padd, mode, iv);
+        EncryptOperation so = SymmetricEncrypt::encrypt_DES;
+        encrypt_symmetric(so, SECRET_KEY, INPUT_PARAMS, provider, padd, mode);
     }
 
     @Test
@@ -229,8 +229,8 @@ public class MeasureSymmetricDecryptTest extends MeasureTest {
         String mode = "CTR";
         String padd = "PKCS7PADDING";
         String provider = "BC";
-        DecryptOperation deo = SymmetricDecrypt::decrypt_DES;
-        decrypt(deo, SECRET_KEY, params, provider, padd, mode, iv);
+        EncryptOperation so = SymmetricEncrypt::encrypt_DES;
+        encrypt_symmetric(so, SECRET_KEY, INPUT_PARAMS, provider, padd, mode);
     }
 
     // DES - CBC
@@ -241,8 +241,8 @@ public class MeasureSymmetricDecryptTest extends MeasureTest {
         String mode = "CBC";
         String padd = "NOPADDING";
         String provider = "BC";
-        DecryptOperation deo = SymmetricDecrypt::decrypt_DES;
-        decrypt(deo, SECRET_KEY, params, provider, padd, mode, iv);
+        EncryptOperation so = SymmetricEncrypt::encrypt_DES;
+        encrypt_symmetric(so, SECRET_KEY, INPUT_PARAMS, provider, padd, mode);
     }
 
     @Test
@@ -251,8 +251,8 @@ public class MeasureSymmetricDecryptTest extends MeasureTest {
         String mode = "CBC";
         String padd = "PKCS5PADDING";
         String provider = "BC";
-        DecryptOperation deo = SymmetricDecrypt::decrypt_DES;
-        decrypt(deo, SECRET_KEY, params, provider, padd, mode, iv);
+        EncryptOperation so = SymmetricEncrypt::encrypt_DES;
+        encrypt_symmetric(so, SECRET_KEY, INPUT_PARAMS, provider, padd, mode);
     }
 
     @Test
@@ -261,8 +261,8 @@ public class MeasureSymmetricDecryptTest extends MeasureTest {
         String mode = "CBC";
         String padd = "PKCS7PADDING";
         String provider = "BC";
-        DecryptOperation deo = SymmetricDecrypt::decrypt_DES;
-        decrypt(deo, SECRET_KEY, params, provider, padd, mode, iv);
+        EncryptOperation so = SymmetricEncrypt::encrypt_DES;
+        encrypt_symmetric(so, SECRET_KEY, INPUT_PARAMS, provider, padd, mode);
     }
 
     // DES - OFB
@@ -273,8 +273,8 @@ public class MeasureSymmetricDecryptTest extends MeasureTest {
         String mode = "OFB";
         String padd = "NOPADDING";
         String provider = "BC";
-        DecryptOperation deo = SymmetricDecrypt::decrypt_DES;
-        decrypt(deo, SECRET_KEY, params, provider, padd, mode, iv);
+        EncryptOperation so = SymmetricEncrypt::encrypt_DES;
+        encrypt_symmetric(so, SECRET_KEY, INPUT_PARAMS, provider, padd, mode);
     }
 
     @Test
@@ -283,8 +283,8 @@ public class MeasureSymmetricDecryptTest extends MeasureTest {
         String mode = "OFB";
         String padd = "PKCS5PADDING";
         String provider = "BC";
-        DecryptOperation deo = SymmetricDecrypt::decrypt_DES;
-        decrypt(deo, SECRET_KEY, params, provider, padd, mode, iv);
+        EncryptOperation so = SymmetricEncrypt::encrypt_DES;
+        encrypt_symmetric(so, SECRET_KEY, INPUT_PARAMS, provider, padd, mode);
     }
 
     @Test
@@ -293,8 +293,8 @@ public class MeasureSymmetricDecryptTest extends MeasureTest {
         String mode = "OFB";
         String padd = "PKCS7PADDING";
         String provider = "BC";
-        DecryptOperation deo = SymmetricDecrypt::decrypt_DES;
-        decrypt(deo, SECRET_KEY, params, provider, padd, mode, iv);
+        EncryptOperation so = SymmetricEncrypt::encrypt_3DES;
+        encrypt_symmetric(so, SECRET_KEY, INPUT_PARAMS, provider, padd, mode);
     }
 
     // 3DES (DESEDE) - CBC
@@ -305,8 +305,8 @@ public class MeasureSymmetricDecryptTest extends MeasureTest {
         String mode = "CBC";
         String padd = "NOPADDING";
         String provider = "AndroidOpenSSL";
-        DecryptOperation deo = SymmetricDecrypt::decrypt_3DES;
-        decrypt(deo, SECRET_KEY, params, provider, padd, mode, iv);
+        EncryptOperation so = SymmetricEncrypt::encrypt_3DES;
+        encrypt_symmetric(so, SECRET_KEY, INPUT_PARAMS, provider, padd, mode);
     }
 
     @Test
@@ -315,8 +315,8 @@ public class MeasureSymmetricDecryptTest extends MeasureTest {
         String mode = "CBC";
         String padd = "PKCS5PADDING";
         String provider = "AndroidOpenSSL";
-        DecryptOperation deo = SymmetricDecrypt::decrypt_3DES;
-        decrypt(deo, SECRET_KEY, params, provider, padd, mode, iv);
+        EncryptOperation so = SymmetricEncrypt::encrypt_3DES;
+        encrypt_symmetric(so, SECRET_KEY, INPUT_PARAMS, provider, padd, mode);
     }
 
     @Test
@@ -325,8 +325,8 @@ public class MeasureSymmetricDecryptTest extends MeasureTest {
         String mode = "CBC";
         String padd = "PKCS7PADDING";
         String provider = "AndroidOpenSSL";
-        DecryptOperation deo = SymmetricDecrypt::decrypt_3DES;
-        decrypt(deo, SECRET_KEY, params, provider, padd, mode, iv);
+        EncryptOperation so = SymmetricEncrypt::encrypt_3DES;
+        encrypt_symmetric(so, SECRET_KEY, INPUT_PARAMS, provider, padd, mode);
     }
 
     // 3DES (DESEDE) - CBC
@@ -337,8 +337,8 @@ public class MeasureSymmetricDecryptTest extends MeasureTest {
         String mode = "ECB";
         String padd = "NOPADDING";
         String provider = "AndroidKeyStoreBCWorkaround";
-        DecryptOperation deo = SymmetricDecrypt::decrypt_3DES;
-        decrypt(deo, SECRET_KEY, params, provider, padd, mode, iv);
+        EncryptOperation so = SymmetricEncrypt::encrypt_3DES;
+        encrypt_symmetric(so, SECRET_KEY, INPUT_PARAMS, provider, padd, mode);
     }
 
     @Test
@@ -347,8 +347,8 @@ public class MeasureSymmetricDecryptTest extends MeasureTest {
         String mode = "ECB";
         String padd = "PKCS7PADDING";
         String provider = "AndroidKeyStoreBCWorkaround";
-        DecryptOperation deo = SymmetricDecrypt::decrypt_3DES;
-        decrypt(deo, SECRET_KEY, params, provider, padd, mode, iv);
+        EncryptOperation so = SymmetricEncrypt::encrypt_3DES;
+        encrypt_symmetric(so, SECRET_KEY, INPUT_PARAMS, provider, padd, mode);
     }
 
     // ARC4
@@ -359,8 +359,8 @@ public class MeasureSymmetricDecryptTest extends MeasureTest {
         String mode = "";
         String padd = "";
         String provider = "BC";
-        DecryptOperation deo = SymmetricDecrypt::decrypt_ARC4;
-        decrypt(deo, SECRET_KEY, params, provider, padd, mode, iv);
+        EncryptOperation so = SymmetricEncrypt::encrypt_ARC4;
+        encrypt_symmetric(so, SECRET_KEY, INPUT_PARAMS, provider, padd, mode);
     }
 
     @Test
@@ -369,8 +369,8 @@ public class MeasureSymmetricDecryptTest extends MeasureTest {
         String mode = "";
         String padd = "";
         String provider = "AndroidOpenSSL";
-        DecryptOperation deo = SymmetricDecrypt::decrypt_ARC4;
-        decrypt(deo, SECRET_KEY, params, provider, padd, mode, iv);
+        EncryptOperation so = SymmetricEncrypt::encrypt_ARC4;
+        encrypt_symmetric(so, SECRET_KEY, INPUT_PARAMS, provider, padd, mode);
     }
 
     // BLOWFISH
@@ -380,8 +380,7 @@ public class MeasureSymmetricDecryptTest extends MeasureTest {
         String mode = "";
         String padd = "";
         String provider = "BC";
-        DecryptOperation deo = SymmetricDecrypt::decrypt_BLOWFISH;
-        decrypt(deo, SECRET_KEY, params, provider, padd, mode, iv);
+        EncryptOperation so = SymmetricEncrypt::encrypt_BLOWFISH;
+        encrypt_symmetric(so, SECRET_KEY, INPUT_PARAMS, provider, padd, mode);
     }
-
 }

@@ -25,7 +25,7 @@ public class SignTest {
     public void test_ecdsa_sign() throws NoSuchAlgorithmException {
         String algo = "SHA256withECDSA";
         int keysize = 256;
-        KeyPair kp = AssymmetricEncryptKeyGen.gen_key_EC(keysize, algo);
+        KeyPair kp = AssymmetricEncryptKeyGen.gen_key_EC(keysize);
         String msg = (String) StringType.genRandomWithSize(DATA_LEN).getValue();
         String signature = Sign.sign(msg, algo, kp.getPrivate());
         assertNotNull(signature);

@@ -4,11 +4,11 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
+import java.security.Key;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Base64;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -98,11 +98,16 @@ public class SymmetricDecrypt {
         return x;
     }
 
-    public static String decrypt_AES(String message, String mode, String padding, SecretKey key, String provider, IvParameterSpec iv){
+    public static String decrypt_AES(String message, String mode, String padding, Key key, String provider, IvParameterSpec iv){
         Cipher cipher = null;
         try {
             cipher = Cipher.getInstance(String.format("AES/%s/%s", mode, padding), provider);
-            cipher.init(Cipher.DECRYPT_MODE, key, iv);
+            if(!mode.equals("ECB")){
+                cipher.init(Cipher.DECRYPT_MODE, key, iv);
+            }
+            else{
+                cipher.init(Cipher.DECRYPT_MODE, key);
+            }
             byte[] plainText = cipher.doFinal(StringToByteArray(message));
             return new String(plainText);
         } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidAlgorithmParameterException | InvalidKeyException | NoSuchProviderException | IllegalBlockSizeException | BadPaddingException e) {
@@ -111,7 +116,7 @@ public class SymmetricDecrypt {
         return null;
     }
 
-    public static String decrypt_BLOWFISH(String message, String mode, String padding, SecretKey key, String provider, IvParameterSpec iv){
+    public static String decrypt_BLOWFISH(String message, String mode, String padding, Key key, String provider, IvParameterSpec iv){
         Cipher cipher = null;
         try {
             cipher = Cipher.getInstance("BLOWFISH", provider);
@@ -123,7 +128,7 @@ public class SymmetricDecrypt {
         }
         return null;
     }
-    public static String decrypt_ARC4(String message, String mode, String padding, SecretKey key, String provider, IvParameterSpec iv){
+    public static String decrypt_ARC4(String message, String mode, String padding, Key key, String provider, IvParameterSpec iv){
         Cipher cipher = null;
         try {
             cipher = Cipher.getInstance("ARC4", provider);
@@ -137,7 +142,40 @@ public class SymmetricDecrypt {
         return null;
     }
 
-    public static String decrypt_ChaCha20(String msg, SecretKey key){
+    public static String decrypt_3DES(String message, String mode, String padding, Key key, String provider, IvParameterSpec iv){
+        Cipher cipher = null;
+        try {
+            cipher = Cipher.getInstance(String.format("DESEDE/%s/%s", mode, padding), provider);
+            if(mode.equals("CBC")){
+                cipher.init(Cipher.DECRYPT_MODE, key, iv);
+            }
+            else{
+                cipher.init(Cipher.DECRYPT_MODE, key);
+            }
+            //
+            byte[] plainText = cipher.doFinal(StringToByteArray(message));
+            return new String(plainText);
+        } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | NoSuchProviderException | IllegalBlockSizeException | BadPaddingException | InvalidAlgorithmParameterException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public static String decrypt_DES(String message, String mode, String padding, Key key, String provider, IvParameterSpec iv){
+        Cipher cipher = null;
+        try {
+            cipher = Cipher.getInstance(String.format("DES/%s/%s", mode, padding), provider);
+            cipher.init(Cipher.DECRYPT_MODE, key);
+            //cipher.init(Cipher.DECRYPT_MODE, key, iv);
+            byte[] plainText = cipher.doFinal(StringToByteArray(message));
+            return new String(plainText);
+        } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | NoSuchProviderException | IllegalBlockSizeException | BadPaddingException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public static String decrypt_ChaCha20(String msg, String mode, String padding, Key key, String provider, IvParameterSpec iv){
         int NONCE_LEN = 12;
         byte[] nonce = new byte[NONCE_LEN];
         byte[] input = StringToByteArray(msg);
@@ -156,7 +194,7 @@ public class SymmetricDecrypt {
         return null;
     }
 
-    public static String decrypt_ChaCha20Poly(String msg, SecretKey key){
+    public static String decrypt_ChaCha20Poly(String msg,  String mode, String padding, Key key, String provider, IvParameterSpec iv){
         int NONCE_LEN = 12;
         byte[] nonce = new byte[NONCE_LEN];
         byte[] input = StringToByteArray(msg);

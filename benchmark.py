@@ -1,5 +1,6 @@
 from operator import inv
 from re import T
+import shutil
 from manafa.hunter_emanafa import HunterEManafa
 from subprocess import TimeoutExpired, Popen, PIPE
 from pylab import *
@@ -27,7 +28,7 @@ def execute_shell_command(cmd, args=[], timeout=None):
         proc.returncode = 1
     return proc.returncode, out, err
 
-def measure(args_obj):
+'''def measure(args_obj):
     em = HunterEManafa()
     for i in range(0, args_obj.n_times):
         em.init()
@@ -45,11 +46,24 @@ def measure(args_obj):
         out_file = em.save_final_report(begin)
         print(f"out file {out_file}")
         print(f"Energy consumed: {p} Joules")
+        time.sleep(args_obj.sleep_time)'''
+
+def measure(args_obj):
+    #arch -x86_64 python anadroid/main.py -t Custom -cmd "ls -al; sleep 30"'
+    cmd_prefix = 'arch -x86_64 pyanadroid -run -t Custom -cmd'
+    for i in range(0, args_obj.n_times):
+        cmd = f'{cmd_prefix} \"{build_exec_cmd(args_obj)}\"'
+        print(f"ai vai o cmd {cmd}")
+        res, o , e = execute_shell_command(cmd)
+        print(res)
+        print(o)
+        print(e)
+        if res != 0:
+            raise Exception(f"Error while running cmd {CMD}")
         time.sleep(args_obj.sleep_time)
 
-
-def fetch_res_files():
-    return [x for x in os.listdir() if 'manafa_res' in x]
+def fetch_res_files(results_dir=""):
+    return [x for x in os.listdir(results_dir) if 'manafa_res' in x]
 
 
 def parse_json(filepath):
@@ -121,11 +135,11 @@ def build_apks(args_obj):
 
 def install_apks(build_type="debug"):
     print("installing apks")
-    res, o , e = execute_shell_command(f"adb install -g -r app/build/outputs/apk/debug/app-{build_type}*")
+    res, o , e = execute_shell_command(f"adb install -g -r app/build/outputs/apk/{build_type.lower()}/app-{build_type.lower()}*")
     print(res)
     print(o)
     print(e)
-    res, o , e = execute_shell_command(f"adb install -g -r app/build/outputs/apk/androidTest/debug/app-{build_type}*")
+    res, o , e = execute_shell_command(f"adb install -g -r app/build/outputs/apk/androidTest/{build_type.lower()}/app-{build_type.lower()}*")
     print(res)
     print(o)
     print(e)
@@ -137,17 +151,29 @@ def uninstall_apks(args_obj):
     execute_shell_command(f"adb shell pm uninstall {args_obj.test_package}")
 
 
+def gen_run_id(args_obj):
+    return f'{args_obj.test_class}_{args_obj.provider}_{args_obj.algorithm}_{args_obj.key_len}_{args_obj.input_size}_{args_obj.algorithm_mode + args_obj.padding}'
+
+
+def save_res_in_id_folder(run_id, file_list):
+    if not os.path.exists(run_id):
+        os.mkdir(run_id)
+    for f in file_list:
+        shutil.copy(f, os.path.join(run_id, os.path.basename(f)))
+
+
 def main(args_obj):
     if args_obj.build: 
         build_apks(args_obj)
+    exit(0)
     if args_obj.install:
-        install_apks()
+        install_apks(args_obj.build_type)
     measure(args_obj)
-    print("medi taremi")
-    files = fetch_res_files()
+    files = fetch_res_files(results_dir="")
     fc = extract_values_from_files(files)
+    run_id = gen_run_id(args_obj, fc)
+    save_res_in_id_folder(run_id)
     print(json.dumps(fc, indent=1))
-    print("ja foi")
     if args_obj.plot:
         plot_res(fc)
     if args_obj.uninstall:
@@ -164,7 +190,9 @@ def build_build_cmd(args_obj):
     prop_keys = get_keys_of_prop_file()
     prop_fmt_keys = list(filter(lambda x: x.upper() in prop_keys, args_obj.__dict__.keys()))
     res = " ".join([f"-P{k.upper()}={args_obj.__dict__[k]}" for k in prop_fmt_keys])
-    return f"./gradlew assembleDebug assembleAndroidTest {res}"
+    cmd = f"./gradlew assemble{args_obj.build_type} assembleAndroidTest {res}"
+    print(f"build command: {cmd}")
+    return cmd
 
 
 def fetch_from_gradle_prop_file(key, default_val):
@@ -173,7 +201,7 @@ def fetch_from_gradle_prop_file(key, default_val):
                 # Split the line into a key-value pair
                 try:
                     k, v = line.strip().split('=')
-                    if k == key:
+                    if k == key and v != '':
                         return v
                 except:
                     continue
@@ -198,17 +226,22 @@ def get_keys_of_prop_file():
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("-b", "--build", help="build", action='store_true', default=False)
-    parser.add_argument("-i", "--install", help="install apks", action='store_true', default=True)
-    parser.add_argument("-u", "--uninstall", help="uninstall apks", action='store_true', default=True)
+    parser.add_argument("-bt", "--build_type", help="build type", type=str, choices=['Debug', 'Release'], default="Release")
+    parser.add_argument("-i", "--install", help="install apks", action='store_true', default=False)
+    parser.add_argument("-u", "--uninstall", help="uninstall apks", action='store_true', default=False)
     parser.add_argument("-p", "--plot", help="plot results", action='store_true', default=False)
     parser.add_argument("-c", "--test_class", help="test class", default="DigestTest", choices=["MeasureDigestTest",
     "MeasureHMACTest", "MeasureSymmetricTest", "MeasureSymmetricDecryptTest"])
     parser.add_argument("-r", "--test_runner", help="unit test runner", default="android.support.test.runner.AndroidJUnitRunner", choices=["android.support.test.runner.AndroidJUnitRunner"])
     parser.add_argument("-tp", "--test_package", help="test package",  default="com.example.cryptobenchmark.test")
-    parser.add_argument("-nt", "--n_times", help="times to repeat each execution",  default=fetch_from_gradle_prop_file("N_TIMES", 500), type=int)
+    parser.add_argument("-nt", "--n_times", help="times to repeat each algorithm execution",  default=1, type=int)
     parser.add_argument("-s", "--sleep_time", help="time to sleep betweeen each execution",  default=3, type=int)
     parser.add_argument("-pv", "--provider", help="crypto provider", default=fetch_from_gradle_prop_file("PROVIDER", "AndroidOpenSSL"), type=str)
     parser.add_argument("-is", "--input_size", help="input size",  default=fetch_from_gradle_prop_file("INPUT_SIZE", 128), type=int)
-    parser.add_argument("-kl", "--key-len", help="key length",  default=fetch_from_gradle_prop_file("KEY_LEN", 128), type=int)
+    parser.add_argument("-kl", "--key_len", help="key length",  default=fetch_from_gradle_prop_file("KEY_LEN", 128), type=int)
+    parser.add_argument("-a", "--algorithm", help="algorithm to execute",  default=fetch_from_gradle_prop_file("ALGORITHM", "AES"), type=str)
+    parser.add_argument("-m", "--algorithm_mode", help="algorithm mode",  default=fetch_from_gradle_prop_file("MODE", ""), type=str)
+    parser.add_argument("-padding", "--padding", help="algorithm padding",  default=fetch_from_gradle_prop_file("PADDING", ""), type=str)
     args = parser.parse_args()
+    print(args.__dict__)
     main(args_obj=args)

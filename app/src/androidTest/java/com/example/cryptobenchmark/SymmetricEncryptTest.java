@@ -22,9 +22,7 @@ import static com.example.cryptobenchmark.decrypt.symmetric.SymmetricDecrypt.dec
 import static com.example.cryptobenchmark.decrypt.symmetric.SymmetricDecrypt.decrypt_ChaCha20;
 import static com.example.cryptobenchmark.decrypt.symmetric.SymmetricDecrypt.decrypt_ChaCha20Poly;
 import static com.example.cryptobenchmark.keygen.symmetric.SymmetricKeyGen.gen_key_AES_AndroidKeyStore;
-import static com.example.cryptobenchmark.keygen.symmetric.SymmetricKeyGen.gen_key_AES_AndroidOpenSSL;
 import static com.example.cryptobenchmark.keygen.symmetric.SymmetricKeyGen.gen_key_ARC4_AndroidOpenSSL;
-import static com.example.cryptobenchmark.keygen.symmetric.SymmetricKeyGen.gen_key_BLOWFISH_BC;
 import static com.example.cryptobenchmark.keygen.symmetric.SymmetricKeyGen.gen_key_ChaCha20;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -38,7 +36,7 @@ import static org.junit.Assert.assertNotNull;
 @RunWith(AndroidJUnit4.class)
 public class SymmetricEncryptTest {
 
-
+/*
     public void test_decrypt_algorithm(String algorithm, int times, String[] params){
         SymmetricEncrypt se = new SymmetricEncrypt(new DeviceCryptoPrimitives());
         for (int i = 0; i < times ; i++) {
@@ -105,6 +103,7 @@ public class SymmetricEncryptTest {
         assertNotNull(enc_res);
     }*/
 
+    /*
     @Test
     public void test_blowfish() {
         String msg = (String) StringType.genRandomWithSize(123).getValue();
@@ -131,9 +130,9 @@ public class SymmetricEncryptTest {
     public void test_chacha20() {
         String msg = (String) StringType.genRandomWithSize(255).getValue();
         SecretKey sk = gen_key_ChaCha20(256);
-        Map.Entry<String,IvParameterSpec> e = SymmetricEncrypt.encrypt_ChaCha20(msg, sk);
+        Map.Entry<String,IvParameterSpec> e = SymmetricEncrypt.encrypt_ChaCha20(msg, "", "", sk, "");
         assertNotNull(e);
-        String res = decrypt_ChaCha20(e.getKey(),sk);
+        String res = decrypt_ChaCha20(e.getKey(),"", "", sk, "", e.getValue());
         assertEquals(res, msg);
     }
 
@@ -143,11 +142,11 @@ public class SymmetricEncryptTest {
         String msg = (String) StringType.genRandomWithSize(255).getValue();
         SecretKey sk = gen_key_ChaCha20(256);
         // ChaCha20/Poly1305/NoPadding
-        Map.Entry<String,IvParameterSpec> e = SymmetricEncrypt.encrypt_ChaCha20Poly(msg, sk);
+        Map.Entry<String,IvParameterSpec> e = SymmetricEncrypt.encrypt_ChaCha20(msg, "", "", sk, "");
         assertNotNull(e);
-        String res = decrypt_ChaCha20Poly(e.getKey(),sk);
+        String res = decrypt_ChaCha20(e.getKey(),"", "", sk, "", e.getValue());
         assertEquals(res, msg);
     }
 
-
+*/
 }

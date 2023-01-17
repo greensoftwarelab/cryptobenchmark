@@ -34,18 +34,6 @@ public class SymmetricKeyGen {
         return new IvParameterSpec(iv);
     }
 
-    public static SecretKey gen_key_AES_AndroidOpenSSL(int keysize, String mode, String padd){
-        KeyGenerator keygen = null;
-        try {
-            keygen = KeyGenerator.getInstance("AES", "AndroidOpenSSL");
-        } catch (NoSuchAlgorithmException | NoSuchProviderException e) {
-            e.printStackTrace();
-            return null;
-        }
-        keygen.init(keysize);
-        return keygen.generateKey();
-    }
-
 
 
     public static SecretKey gen_key_AES_AndroidKeyStore(int keysize){
@@ -121,13 +109,13 @@ public class SymmetricKeyGen {
         return keyGenerator.generateKey();
     }
 
-    public static SecretKey gen_key_DES_BC(int keysize, String mode, String padding){
+    public static SecretKey gen_key_DES(int keysize, String mode, String padding, String provider){
         // keys size: 56 bits
         // block size: 64 bits
         KeyGenerator keygenerator = null;
         try {
-            //keygenerator = KeyGenerator.getInstance(String.format("DES/%s/%s", mode, padding), "BC");
-            keygenerator = KeyGenerator.getInstance("DES", "BC");
+            keygenerator = KeyGenerator.getInstance(String.format("DES/%s/%s", mode, padding), provider);
+            //keygenerator = KeyGenerator.getInstance("DES", "BC");
         } catch (NoSuchAlgorithmException | NoSuchProviderException e) {
             e.printStackTrace();
             return null;
@@ -182,8 +170,8 @@ public class SymmetricKeyGen {
         // block size: 64 bits
         KeyGenerator keygenerator = null;
         try {
-            //keygenerator = KeyGenerator.getInstance(String.format("DES/%s/%s", mode, padding), "BC");
-            keygenerator = KeyGenerator.getInstance("DESEDE", "AndroidKeyStoreBCWorkaround");
+            keygenerator = KeyGenerator.getInstance(String.format("DESEDE/%s/%s", mode, padding), "BC");
+            //keygenerator = KeyGenerator.getInstance("DESEDE", "AndroidKeyStoreBCWorkaround");
         } catch (NoSuchAlgorithmException | NoSuchProviderException e) {
             e.printStackTrace();
             return null;
@@ -216,10 +204,11 @@ public class SymmetricKeyGen {
         return  keygenerator.generateKey();
     }
 
-    public static SecretKey gen_key_BLOWFISH_BC(int keysize, String mode, String padding){
+    public static SecretKey gen_key_BLOWFISH(int keysize, String mode, String padding,
+                                                String provider){
         KeyGenerator keygenerator = null;
         try {
-            keygenerator = KeyGenerator.getInstance("BLOWFISH", "BC");
+            keygenerator = KeyGenerator.getInstance("BLOWFISH", provider);
         } catch (NoSuchAlgorithmException | NoSuchProviderException e) {
             e.printStackTrace();
             return null;
@@ -261,6 +250,18 @@ public class SymmetricKeyGen {
         return keygen.generateKey();
     }
 
+    public static SecretKey gen_key_AES(int keysize, String mode, String padd){
+        KeyGenerator keygen = null;
+        try {
+            keygen = KeyGenerator.getInstance("AES");
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+            return null;
+        }
+        keygen.init(keysize);
+        return keygen.generateKey();
+    }
+
     public static SecretKey gen_key(String algorithm, int keysize, String provider){
         KeyGenerator keygen = null;
         try {
@@ -273,14 +274,14 @@ public class SymmetricKeyGen {
         return keygen.generateKey();
     }
 
-    public static SecretKey gen_key_ChaCha20(int keysize){
+    public static SecretKey gen_key_ChaCha20(int keysize, String provider){
         KeyGenerator keyGen = null;
         try {
-            keyGen = KeyGenerator.getInstance("ChaCha20");
+            keyGen = KeyGenerator.getInstance("ChaCha20", provider);
             keyGen.init(keysize, SecureRandom.getInstanceStrong());
             SecretKey secretKey = keyGen.generateKey();
             return secretKey;
-        } catch (NoSuchAlgorithmException e) {
+        } catch (NoSuchAlgorithmException | NoSuchProviderException e) {
             e.printStackTrace();
         }
         return null;

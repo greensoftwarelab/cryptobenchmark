@@ -1,0 +1,191 @@
+package com.example.cryptobenchmark;
+import com.example.cryptobenchmark.misc.DeviceCryptoPrimitives;
+import com.example.cryptobenchmark.sign.Sign;
+import com.example.cryptobenchmark.sign.SignOperation;
+import com.hunter.library.debug.HunterDebug;
+import org.junit.Test;
+import java.security.KeyPair;
+import java.security.PrivateKey;
+
+
+public class MeasureSignTest extends MeasureTest{
+
+    // aks - Ec
+    // bc - ecdh, dsa, shaXwithecdsa, shaXwithrsa
+    // aossl - ecdh, shaXwithecdsa, shaXwithrsa
+    // aksbcw - shaXwithrsa, shaXwithdsa,
+
+    public static int KEY_LEN = keyLen; // keyLen;
+    public static String CRYPTO_PROVIDER =  PROVIDER; // "AndroidOpenSSL"; //MeasureTest.provider;
+
+    KeyPair KEY_PAIR = gen_key_pair(KEY_LEN, ALGORITHM, CRYPTO_PROVIDER, MODE, PADDING);
+
+
+    public void sign(SignOperation sop, String algo, PrivateKey key, String provider) throws Exception {
+        for (String msg: INPUT_MESSAGES) {
+            String res = sop.sign(msg, algo, key, provider);
+            if (res==null){
+                throw new Exception("Invalid Signature");
+            }
+        }
+    }
+/*
+    @Test
+    public void test_dummy(){
+        DeviceCryptoPrimitives dcp = new DeviceCryptoPrimitives();
+        System.out.println(dcp);
+    }*/
+
+    @HunterDebug
+    @Test
+    public void test_sign_SHA1WithRSA_AndroidOpenSSL() throws Exception {
+        String algo = "SHA1WithRSA", mode = "", padding = "", provider = "AndroidOpenSSL";
+        SignOperation sop = Sign::sign;
+        sign(sop, algo, KEY_PAIR.getPrivate(), provider);
+    }
+
+    @HunterDebug
+    @Test
+    public void test_sign_SHA256WithRSA_AndroidOpenSSL() throws Exception {
+        String algo = "SHA256WithRSA", mode = "", padding = "", provider = "AndroidOpenSSL";
+        SignOperation sop = Sign::sign;
+        sign(sop, algo, KEY_PAIR.getPrivate(), provider);
+    }
+
+    @HunterDebug
+    @Test
+    public void test_sign_SHA384WithRSA_AndroidOpenSSL() throws Exception {
+        String algo = "SHA384WithRSA", mode = "", padding = "", provider = "AndroidOpenSSL";
+        SignOperation sop = Sign::sign;
+        sign(sop, algo, KEY_PAIR.getPrivate(), provider);
+    }
+
+    @HunterDebug
+    @Test
+    public void test_sign_SHA512WithRSA_AndroidOpenSSL() throws Exception {
+        String algo = "SHA512WithRSA", mode = "", padding = "", provider = "BC";
+        SignOperation sop = Sign::sign;
+        sign(sop, algo, KEY_PAIR.getPrivate(), provider);
+    }
+
+    @HunterDebug
+    @Test
+    public void test_sign_SHA1WithRSA_BC() throws Exception {
+        String algo = "SHA1WithRSA", mode = "", padding = "", provider = "BC";
+        SignOperation sop = Sign::sign;
+        sign(sop, algo, KEY_PAIR.getPrivate(), provider);
+    }
+
+    @HunterDebug
+    @Test
+    public void test_sign_SHA256WithRSA_BC() throws Exception {
+        String algo = "SHA256WithRSA", mode = "", padding = "", provider = "BC";
+        SignOperation sop = Sign::sign;
+        sign(sop, algo, KEY_PAIR.getPrivate(), provider);
+    }
+
+    @HunterDebug
+    @Test
+    public void test_sign_SHA384WithRSA_BC() throws Exception {
+        String algo = "SHA384WithRSA", mode = "", padding = "", provider = "BC";
+        SignOperation sop = Sign::sign;
+        sign(sop, algo, KEY_PAIR.getPrivate(), provider);
+    }
+
+    @HunterDebug
+    @Test
+    public void test_sign_SHA512WithRSA_BC() throws Exception {
+        String algo = "SHA512WithRSA", mode = "", padding = "", provider = "BC";
+        SignOperation sop = Sign::sign;
+        sign(sop, algo, KEY_PAIR.getPrivate(), provider);
+    }
+
+
+    /*
+    @HunterDebug
+    @Test
+    public void test_sign_ECDSA_AndroidOpenSSL() throws Exception {
+        String algo = "SHA256WithECDSA", mode = "", padding = "", provider = "AndroidOpenSSL";
+        KeyPair kp =  gen_key_ECDSA(KEY_LEN); // gen_key_pair(KEY_LEN, algo, provider, padding,  mode);
+        SignOperation sop = Sign::sign;
+        sign(sop, algo, kp.getPrivate(), provider);
+    }*/
+
+    //
+    // DSA
+    //
+
+    @HunterDebug
+    @Test
+    public void test_sign_SHA1WithDSA_BC() throws Exception {
+        String algo = "SHA1WithDSA", mode = "", padding = "", provider = "BC";
+        SignOperation sop = Sign::sign;
+        sign(sop, algo, KEY_PAIR.getPrivate(), provider);
+    }
+
+    @HunterDebug
+    @Test
+    public void test_sign_SHA224WithDSA_BC() throws Exception {
+        String algo = "SHA224WithDSA", mode = "", padding = "", provider = "BC";
+        SignOperation sop = Sign::sign;
+        sign(sop, algo, KEY_PAIR.getPrivate(), provider);
+    }
+
+    @HunterDebug
+    @Test
+    public void test_sign_SHA256WithDSA_BC() throws Exception {
+        String algo = "SHA256WithDSA", mode = "", padding = "", provider = "BC";
+        SignOperation sop = Sign::sign;
+        sign(sop, algo, KEY_PAIR.getPrivate(), provider);
+    }
+
+    @HunterDebug
+    @Test
+    public void test_sign_SHA384WithDSA_BC() throws Exception {
+        String algo = "SHA384WithDSA", mode = "", padding = "", provider = "BC";
+        SignOperation sop = Sign::sign;
+        sign(sop, algo, KEY_PAIR.getPrivate(), provider);
+    }
+
+    @HunterDebug
+    @Test
+    public void test_sign_SHA512WithDSA_BC() throws Exception {
+        String algo = "SHA512WithDSA", mode = "", padding = "", provider = "BC";
+        SignOperation sop = Sign::sign;
+        sign(sop, algo, KEY_PAIR.getPrivate(), provider);
+    }
+
+    @HunterDebug
+    @Test
+    public void test_sign_SHA1WithDSA_AndroidOpenSSL() throws Exception {
+        String algo = "SHA1WithDSA", mode = "", padding = "", provider = "AndroidOpenSSL";
+        SignOperation sop = Sign::sign;
+        sign(sop, algo, KEY_PAIR.getPrivate(), provider);
+    }
+
+    @HunterDebug
+    @Test
+    public void test_sign_SHA256WithDSA_AndroidOpenSSL() throws Exception {
+        String algo = "SHA256WithDSA", mode = "", padding = "", provider = "AndroidOpenSSL";
+        SignOperation sop = Sign::sign;
+        sign(sop, algo, KEY_PAIR.getPrivate(), provider);
+    }
+
+    @HunterDebug
+    @Test
+    public void test_sign_SHA384WithDSA_AndroidOpenSSL() throws Exception {
+        String algo = "SHA384WithDSA", mode = "", padding = "", provider = "AndroidOpenSSL";
+        SignOperation sop = Sign::sign;
+        sign(sop, algo, KEY_PAIR.getPrivate(), provider);
+    }
+
+    @HunterDebug
+    @Test
+    public void test_sign_SHA512WithDSA_AndroidOpenSSL() throws Exception {
+        String algo = "SHA512WithDSA", mode = "", padding = "", provider = "BC";
+        SignOperation sop = Sign::sign;
+        sign(sop, algo, KEY_PAIR.getPrivate(), provider);
+    }
+
+
+}

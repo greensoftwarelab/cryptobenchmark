@@ -3,6 +3,7 @@ package com.example.cryptobenchmark;
 import android.support.test.runner.AndroidJUnit4;
 
 import com.example.cryptobenchmark.digest.Digest;
+import com.example.cryptobenchmark.digest.DigestOperation;
 import com.example.cryptobenchmark.misc.DeviceCryptoPrimitives;
 import com.example.cryptobenchmark.misc.datatypes.StringType;
 import com.hunter.library.debug.HunterDebug;
@@ -19,53 +20,105 @@ import org.junit.runner.RunWith;
 @RunWith(AndroidJUnit4.class)
 public class MeasureDigestTest extends MeasureTest{
 
-    public void test_digest_algorithm(String algorithm, int times, String[] params){
-        Digest d = new Digest(new DeviceCryptoPrimitives());
-        for (int i = 0; i < times ; i++) {
-            String target = i > params.length-1 ? params[i % params.length] : params[i];
-            d.digest_all(target, algorithm);
+    public void digest(DigestOperation digest, String provider){
+        for (String inputMessage : INPUT_MESSAGES) {
+            digest.digest(inputMessage, provider);
         }
     }
 
     @HunterDebug
     @Test
-    public void test_md5(){
-        test_digest_algorithm("MD5",
-                nTimes, new String[]{ (String) StringType.genRandomWithSize(inputSize).getValue()});
+    public void test_md5_BC(){
+        String provider = "BC";
+        DigestOperation dop = Digest::digest_MD5;
+        digest(dop, provider);
     }
 
     @HunterDebug
     @Test
-    public void test_sha1(){
-        test_digest_algorithm("SHA1", nTimes,
-                new String[]{ (String) StringType.genRandomWithSize(inputSize).getValue()});
+    public void test_sha1_BC(){
+        String provider = "BC";
+        DigestOperation dop = Digest::digest_SHA1;
+        digest(dop, provider);
     }
 
     @HunterDebug
     @Test
-    public void test_sha224(){
-        test_digest_algorithm("SHA224", nTimes,
-                new String[]{ (String) StringType.genRandomWithSize(inputSize).getValue()});
+    public void test_sha224_BC(){
+        String provider = "BC";
+        DigestOperation dop = Digest::digest_SHA224;
+        digest(dop, provider);
     }
 
     @HunterDebug
     @Test
-    public void test_sha256(){
-        test_digest_algorithm("SHA256", nTimes,
-                new String[]{ (String) StringType.genRandomWithSize(inputSize).getValue()});
+    public void test_sha256_BC(){
+        String provider = "BC";
+        DigestOperation dop = Digest::digest_SHA256;
+        digest(dop, provider);
     }
 
     @HunterDebug
     @Test
-    public void test_sha384(){
-        test_digest_algorithm("SHA384", nTimes,
-                new String[]{ (String) StringType.genRandomWithSize(inputSize).getValue()});
+    public void test_sha384_BC(){
+        String provider = "BC";
+        DigestOperation dop = Digest::digest_SHA384;
+        digest(dop, provider);
     }
 
     @HunterDebug
     @Test
-    public void test_sha512(){
-        test_digest_algorithm("SHA512", nTimes,
-                new String[]{ (String) StringType.genRandomWithSize(inputSize).getValue()});
+    public void test_sha512_BC(){
+        String provider = "BC";
+        DigestOperation dop = Digest::digest_SHA512;
+        digest(dop, provider);
+    }
+
+    @HunterDebug
+    @Test
+    public void test_md5_AndroidOpenSSL(){
+        String provider = "AndroidOpenSSL";
+        DigestOperation dop = Digest::digest_MD5;
+        digest(dop, provider);
+    }
+
+    @HunterDebug
+    @Test
+    public void test_sha1_AndroidOpenSSL(){
+        String provider = "AndroidOpenSSL";
+        DigestOperation dop = Digest::digest_SHA1;
+        digest(dop, provider);
+    }
+
+    @HunterDebug
+    @Test
+    public void test_sha224_AndroidOpenSSL(){
+        String provider = "AndroidOpenSSL";
+        DigestOperation dop = Digest::digest_SHA224;
+        digest(dop, provider);
+    }
+
+    @HunterDebug
+    @Test
+    public void test_sha256_AndroidOpenSSL(){
+        String provider = "AndroidOpenSSL";
+        DigestOperation dop = Digest::digest_SHA256;
+        digest(dop, provider);
+    }
+
+    @HunterDebug
+    @Test
+    public void test_sha384_AndroidOpenSSL(){
+        String provider = "AndroidOpenSSL";
+        DigestOperation dop = Digest::digest_SHA384;
+        digest(dop, provider);
+    }
+
+    @HunterDebug
+    @Test
+    public void test_sha512_AndroidOpenSSL(){
+        String provider = "AndroidOpenSSL";
+        DigestOperation dop = Digest::digest_SHA512;
+        digest(dop, provider);
     }
 }

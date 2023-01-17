@@ -10,6 +10,7 @@ import java.security.Key;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
+import java.security.spec.MGF1ParameterSpec;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -25,6 +26,8 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.OAEPParameterSpec;
+import javax.crypto.spec.PSource;
 
 import static com.example.cryptobenchmark.misc.Utils.StringToByteArray;
 import static com.example.cryptobenchmark.misc.Utils.byteArrayToString;
@@ -98,6 +101,19 @@ public class AssymmetricDecrypt {
             byte[] plainText = cipher.doFinal(StringToByteArray(message));
             return new String(plainText);
         } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | NoSuchProviderException | IllegalBlockSizeException | BadPaddingException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public static String decrypt_RSA_maloco(String message, String mode, String padding, Key key, String provider, IvParameterSpec iv){
+        Cipher cipher = null;
+        try {
+            cipher = Cipher.getInstance(String.format("RSA/%s/%s", mode, padding), provider);
+            cipher.init(Cipher.DECRYPT_MODE, key, new OAEPParameterSpec("SHA-1", "MGF1", MGF1ParameterSpec.SHA1, PSource.PSpecified.DEFAULT));
+            byte[] plainText = cipher.doFinal(StringToByteArray(message));
+            return new String(plainText);
+        } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | NoSuchProviderException | IllegalBlockSizeException | BadPaddingException | InvalidAlgorithmParameterException e) {
             e.printStackTrace();
         }
         return null;
