@@ -22,12 +22,11 @@ import javax.crypto.spec.IvParameterSpec;
 import static org.junit.Assert.assertNotNull;
 
 
-public class MeasureAssymmetricEncryptTest extends MeasureTest{
+public class MeasureAssymmetricAllTest extends MeasureTest{
 
     public static int KEY_LEN = keyLen; // keyLen;
     public static String CRYPTO_PROVIDER = MeasureTest.PROVIDER; // "AndroidOpenSSL"; //MeasureTest.provider;
     String[] params =  MeasureTest.INPUT_MESSAGES; //gen_random_workload(64, nTimes); // gen_random_workload(inputSize, nTimes);
-    public static KeyPair keyPair =  gen_key_pair(KEY_LEN, ALGORITHM, PROVIDER, MODE, PADDING, WITH_KEY_SPEC);
 
     //@Test
 @HunterDebug
@@ -59,9 +58,9 @@ public class MeasureAssymmetricEncryptTest extends MeasureTest{
         String algo = "RSA", mode = "ECB", padding = "PKCS1PADDING";
         KeyPair kp = AssymmetricEncryptKeyGen.gen_key_RSA(KEY_LEN);
         EncryptOperation so = AssymmetricEncrypt::encrypt_RSA;
-        //DecryptOperation deo = AssymmetricDecrypt::decrypt_RSA;
-        encrypt(so, kp.getPublic(), params, PROVIDER, PADDING, MODE);
-        //encrypt_decrypt(so, deo, kp.getPublic(), kp.getPrivate(), params, CRYPTO_PROVIDER, padding, mode);
+        DecryptOperation deo = AssymmetricDecrypt::decrypt_RSA;
+        //encrypt(so, kp.getPublic(), params, PROVIDER, PADDING, MODE);
+        encrypt_decrypt(so, deo, kp.getPublic(), kp.getPrivate(), params, CRYPTO_PROVIDER, padding, mode);
         // OK
     }
 
@@ -69,13 +68,13 @@ public class MeasureAssymmetricEncryptTest extends MeasureTest{
 @HunterDebug
     
     public void test_RSA_ECB_PKCS1PADDING_AndroidOpenSSL() throws Exception {
-        String algo = "RSA", mode = "ECB", padding = "PKCS1PADDING";
+        String algo = "RSA", mode = "ECB", padding = "PKCS1PADDING",  provider = "AndroidOpenSSL";
         KeyPair kp = AssymmetricEncryptKeyGen.gen_key_RSA(KEY_LEN);
         EncryptOperation so = AssymmetricEncrypt::encrypt_RSA;
+        DecryptOperation deo = AssymmetricDecrypt::decrypt_RSA;
+        encrypt_decrypt(so, deo, kp.getPublic(), kp.getPrivate(), params, provider, padding, mode);
         //DecryptOperation deo = AssymmetricDecrypt::decrypt_RSA;
-        //encrypt_decrypt(so, deo, kp.getPublic(), kp.getPrivate(), params, CRYPTO_PROVIDER, padding, mode);
-        //DecryptOperation deo = AssymmetricDecrypt::decrypt_RSA;
-        encrypt(so, kp.getPublic(), params, "AndroidOpenSSL", padding, mode);
+        //encrypt(so, kp.getPublic(), params, "AndroidOpenSSL", padding, mode);
         //OK
     }
 
@@ -83,21 +82,23 @@ public class MeasureAssymmetricEncryptTest extends MeasureTest{
 @HunterDebug
     
     public void test_RSA_ECB_OAEPPADDING_AndroidOpenSSL() throws Exception{
-        String algo = "RSA", mode = "ECB", padding = "OAEPPADDING";
+        String algo = "RSA", mode = "ECB", padding = "OAEPPADDING",  provider = "AndroidOpenSSL";
         KeyPair kp = AssymmetricEncryptKeyGen.gen_key_RSA(KEY_LEN);
         EncryptOperation so = AssymmetricEncrypt::encrypt_RSA;
-        encrypt(so, kp.getPublic(), params, "AndroidOpenSSL", padding, mode);
+        DecryptOperation deo = AssymmetricDecrypt::decrypt_RSA;
+        encrypt_decrypt(so, deo, kp.getPublic(), kp.getPrivate(), params, provider, padding, mode);
     }
 
     @Test
 @HunterDebug
     
     public void test_RSA_ECB_OAEPWITHSHA_1ANDMGF1PADDING_AndroidOpenSSL() throws Exception {
-        String algo = "RSA", mode = "ECB", padding = "OAEPWITHSHA-1ANDMGF1PADDING";
+        String algo = "RSA", mode = "ECB", padding = "OAEPWITHSHA-1ANDMGF1PADDING",
+                provider = "AndroidOpenSSL";
         KeyPair kp = AssymmetricEncryptKeyGen.gen_key_RSA(KEY_LEN);
         EncryptOperation so = AssymmetricEncrypt::encrypt_RSA;
-        //DecryptOperation deo = AssymmetricDecrypt::decrypt_RSA;
-        encrypt(so, kp.getPublic(), params, "AndroidOpenSSL", padding, mode);
+        DecryptOperation deo = AssymmetricDecrypt::decrypt_RSA;
+        encrypt_decrypt(so, deo, kp.getPublic(), kp.getPrivate(), params, provider, padding, mode);
     }
 
 
@@ -105,36 +106,36 @@ public class MeasureAssymmetricEncryptTest extends MeasureTest{
 @HunterDebug
     
     public void test_RSA_ECB_OAEPWITHSHA_224ANDMGF1PADDING_AndroidOpenSSL() throws Exception {
-        String algo = "RSA", mode = "ECB", padding = "OAEPWITHSHA-224ANDMGF1PADDING";
+        String algo = "RSA", mode = "ECB", padding = "OAEPWITHSHA-224ANDMGF1PADDING",
+                provider = "AndroidOpenSSL";
         KeyPair kp = AssymmetricEncryptKeyGen.gen_key_RSA(KEY_LEN);
         EncryptOperation so = AssymmetricEncrypt::encrypt_RSA;
-        //DecryptOperation deo = AssymmetricDecrypt::decrypt_RSA;
-        encrypt(so, kp.getPublic(), params, "AndroidOpenSSL", padding, mode);
+        DecryptOperation deo = AssymmetricDecrypt::decrypt_RSA;
+        encrypt_decrypt(so, deo, kp.getPublic(), kp.getPrivate(), params, provider , padding, mode);
     }
     @Test
 @HunterDebug
     
     public void test_RSA_ECB_OAEPWITHSHA_256ANDMGF1PADDING_AndroidOpenSSL() throws Exception {
-        String algo = "RSA", mode = "ECB", padding = "OAEPWITHSHA-256ANDMGF1PADDING";
+        String algo = "RSA", mode = "ECB", padding = "OAEPWITHSHA-256ANDMGF1PADDING",
+                provider = "AndroidOpenSSL";
         //KeyPair kp = AssymmetricEncryptKeyGen.gen_key_RSA_AndroidKeyStore(512);
         KeyPair kp = AssymmetricEncryptKeyGen.gen_key_RSA(KEY_LEN);
         EncryptOperation so = AssymmetricEncrypt::encrypt_RSA;
         DecryptOperation deo = AssymmetricDecrypt::decrypt_RSA;
-        //DecryptOperation deo = AssymmetricDecrypt::decrypt_RSA;
-        encrypt(so, kp.getPublic(), params, "AndroidOpenSSL", padding, mode);
+        encrypt_decrypt(so, deo, kp.getPublic(), kp.getPrivate(), params, provider, padding, mode);
     }
 
     @Test
 @HunterDebug
     
     public void test_RSA_ECB_OAEPWITHSHA_384ANDMGF1PADDING_AndroidOpenSSL() throws Exception {
-        String algo = "RSA", mode = "ECB", padding = "OAEPWITHSHA-384ANDMGF1PADDING";
+        String algo = "RSA", mode = "ECB", padding = "OAEPWITHSHA-384ANDMGF1PADDING", provider = "AndroidOpenSSL";
         //KeyPair kp = AssymmetricEncryptKeyGen.gen_key_RSA_AndroidKeyStore(512);
         KeyPair kp = AssymmetricEncryptKeyGen.gen_key_RSA(KEY_LEN);
         EncryptOperation so = AssymmetricEncrypt::encrypt_RSA;
         DecryptOperation deo = AssymmetricDecrypt::decrypt_RSA;
-        //DecryptOperation deo = AssymmetricDecrypt::decrypt_RSA;
-        encrypt(so, kp.getPublic(), params, "AndroidOpenSSL", padding, mode);
+        encrypt_decrypt(so, deo, kp.getPublic(), kp.getPrivate(), params, provider, padding, mode);
     }
 
 
@@ -143,13 +144,13 @@ public class MeasureAssymmetricEncryptTest extends MeasureTest{
     
     public void test_RSA_ECB_OAEPWITHSHA_512ANDMGF1PADDING_AndroidOpenSSL() throws Exception{
         // cannot be used with large block sizes (> 64?)
-        String algo = "RSA", mode = "ECB", padding = "OAEPWITHSHA-512ANDMGF1PADDING";
+        String algo = "RSA", mode = "ECB", padding = "OAEPWITHSHA-512ANDMGF1PADDING",
+                provider = "AndroidOpenSSL";
         //KeyPair kp = AssymmetricEncryptKeyGen.gen_key_RSA_AndroidKeyStore(512);
         KeyPair kp = AssymmetricEncryptKeyGen.gen_key_RSA(KEY_LEN);
         EncryptOperation so = AssymmetricEncrypt::encrypt_RSA;
         DecryptOperation deo = AssymmetricDecrypt::decrypt_RSA;
-        //DecryptOperation deo = AssymmetricDecrypt::decrypt_RSA;
-        encrypt(so, kp.getPublic(), params, "AndroidOpenSSL", padding, mode);
+        encrypt_decrypt(so, deo, kp.getPublic(), kp.getPrivate(), params, provider, padding, mode);
     }
 
     /*@Test
@@ -171,10 +172,8 @@ public class MeasureAssymmetricEncryptTest extends MeasureTest{
         String algo = "RSA", mode = "ECB", padding = "PKCS1PADDING", provider = "AndroidKeyStoreBCWorkaround";
         KeyPair kp = AssymmetricEncryptKeyGen.gen_key_RSA(KEY_LEN, mode, padding);
         EncryptOperation so = AssymmetricEncrypt::encrypt_RSA;
-        //DecryptOperation deo = AssymmetricDecrypt::decrypt_RSA;
-        //encrypt_decrypt(so, deo, kp.getPublic(), kp.getPrivate(), params, provider, padding, mode);
-        encrypt(so, kp.getPublic(), params, provider, padding, mode);
-        //OK
+        DecryptOperation deo = AssymmetricDecrypt::decrypt_RSA;
+        encrypt_decrypt(so, deo, kp.getPublic(), kp.getPrivate(), params, provider, padding, mode);
     }
 
     @Test
@@ -182,10 +181,10 @@ public class MeasureAssymmetricEncryptTest extends MeasureTest{
     
     public void test_RSA_ECB_OAEPPADDING_AndroidKeyStoreBCWorkaround() throws Exception{
         String algo = "RSA", mode = "ECB", padding = "PKCS1PADDING", provider = "AndroidKeyStoreBCWorkaround";
+        KeyPair kp = AssymmetricEncryptKeyGen.gen_key_RSA(KEY_LEN, mode, padding);
         EncryptOperation so = AssymmetricEncrypt::encrypt_RSA;
-        //DecryptOperation deo = AssymmetricDecrypt::decrypt_RSA;
-        encrypt(so, keyPair.getPublic(), params, provider, padding, mode);
-        // OK
+        DecryptOperation deo = AssymmetricDecrypt::decrypt_RSA;
+        encrypt_decrypt(so, deo, kp.getPublic(), kp.getPrivate(), params, provider, padding, mode);
     }
 
     @Test
@@ -194,28 +193,36 @@ public class MeasureAssymmetricEncryptTest extends MeasureTest{
     public void test_RSA_ECB_OAEPWITHSHA_1ANDMGF1PADDING_AndroidKeyStoreBCWorkaround() throws Exception {
         String algo = "RSA", mode = "ECB", padding = "OAEPWITHSHA-1ANDMGF1PADDING",
                 provider = "AndroidKeyStoreBCWorkaround";
+        KeyPair kp = AssymmetricEncryptKeyGen.gen_key_rsakeyspec(KEY_LEN, mode, padding, provider);
         EncryptOperation so = AssymmetricEncrypt::encrypt_RSA;
         //encrypt_decrypt(so, deo, kp.getPublic(), kp.getPrivate(), params, provider, padding, mode);
-        encrypt(so, keyPair.getPublic(), params, provider, padding, mode);
-        //  Only RSAKeyGenParameterSpec supported
+        DecryptOperation deo = AssymmetricDecrypt::decrypt_RSA;
+        encrypt_decrypt(so, deo, kp.getPublic(), kp.getPrivate(), params, provider, padding, mode);
     }
 
     @Test
 @HunterDebug
     
     public void test_RSA_ECB_OAEPWITHSHA_224ANDMGF1PADDING() throws Exception {
-        String algo = "RSA", mode = "ECB", padding = "OAEPWITHSHA-224ANDMGF1PADDING";
+        String algo = "RSA", mode = "ECB", padding = "OAEPWITHSHA-224ANDMGF1PADDING",
+                provider = "AndroidKeyStoreBCWorkaround";
+        KeyPair kp = AssymmetricEncryptKeyGen.gen_key_rsakeyspec(KEY_LEN, mode, padding, provider);
         EncryptOperation so = AssymmetricEncrypt::encrypt_RSA;
-        encrypt(so, keyPair.getPublic(), params, CRYPTO_PROVIDER, padding, mode);
+        DecryptOperation deo = AssymmetricDecrypt::decrypt_RSA;
+        encrypt_decrypt(so, deo, kp.getPublic(), kp.getPrivate(), params, provider, padding, mode);
+        // Only RSAKeyGenParameterSpec supported
     }
 
     @Test
 @HunterDebug
     
     public void test_RSA_ECB_OAEPWITHSHA_256ANDMGF1PADDING() throws Exception {
-        String algo = "RSA", mode = "ECB", padding = "OAEPWITHSHA-256ANDMGF1PADDING";
+        String algo = "RSA", mode = "ECB", padding = "OAEPWITHSHA-256ANDMGF1PADDING",
+                provider = "AndroidKeyStoreBCWorkaround";
+        KeyPair kp = AssymmetricEncryptKeyGen.gen_key_rsakeyspec(KEY_LEN, mode, padding, provider);
         EncryptOperation so = AssymmetricEncrypt::encrypt_RSA;
-        encrypt(so, keyPair.getPublic(), params, CRYPTO_PROVIDER, padding, mode);
+        DecryptOperation deo = AssymmetricDecrypt::decrypt_RSA;
+        encrypt_decrypt(so, deo, kp.getPublic(), kp.getPrivate(), params, provider, padding, mode);
         // Only RSAKeyGenParameterSpec supported
     }
 
@@ -226,9 +233,10 @@ public class MeasureAssymmetricEncryptTest extends MeasureTest{
     public void test_RSA_ECB_OAEPWITHSHA_384ANDMGF1PADDING() throws Exception {
         String algo = "RSA", mode = "ECB", padding = "OAEPWITHSHA-384ANDMGF1PADDING";
         //KeyPair kp = AssymmetricEncryptKeyGen.gen_key_RSA_AndroidKeyStore(512);
+        KeyPair kp = AssymmetricEncryptKeyGen.gen_key_RSA(KEY_LEN);
         EncryptOperation so = AssymmetricEncrypt::encrypt_RSA;
         DecryptOperation deo = AssymmetricDecrypt::decrypt_RSA;
-        encrypt(so, keyPair.getPublic(), params, CRYPTO_PROVIDER, padding, mode);
+        encrypt_decrypt(so, deo, kp.getPublic(), kp.getPrivate(), params, CRYPTO_PROVIDER, padding, mode);
     }
 
 
@@ -242,7 +250,7 @@ public class MeasureAssymmetricEncryptTest extends MeasureTest{
         KeyPair kp = AssymmetricEncryptKeyGen.gen_key_RSA(KEY_LEN);
         EncryptOperation so = AssymmetricEncrypt::encrypt_RSA;
         DecryptOperation deo = AssymmetricDecrypt::decrypt_RSA;
-        encrypt(so, keyPair.getPublic(), params, CRYPTO_PROVIDER, padding, mode);
+        encrypt_decrypt(so, deo, kp.getPublic(), kp.getPrivate(), params, CRYPTO_PROVIDER, padding, mode);
     }
 
 

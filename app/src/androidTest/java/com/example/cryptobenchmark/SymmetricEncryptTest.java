@@ -1,6 +1,6 @@
 package com.example.cryptobenchmark;
 
-import android.support.test.runner.AndroidJUnit4;
+import androidx.test.runner.AndroidJUnit4;
 
 import com.example.cryptobenchmark.decrypt.symmetric.SymmetricDecrypt;
 import com.example.cryptobenchmark.encrypt.symmetric.SymmetricEncrypt;
@@ -10,9 +10,13 @@ import com.example.cryptobenchmark.misc.datatypes.StringType;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import java.security.AlgorithmParameters;
 import java.security.NoSuchAlgorithmException;
 import java.util.Map;
 
+import javax.crypto.Cipher;
+import javax.crypto.Mac;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
@@ -36,6 +40,45 @@ import static org.junit.Assert.assertNotNull;
 @RunWith(AndroidJUnit4.class)
 public class SymmetricEncryptTest {
 
+
+    @Test
+    public void test_get_impl() {
+        String[] algoList = {
+                //"MD5", "SHA1", "SHA224", "SHA256", "SHA384" ,"SHA512"
+                "ChaCha20/Poly1305/NoPadding",
+                "AES/GCM/NoPadding", "AES/GCM/PKCS5PADDING", "AES/GCM/PKCS7PADDING",
+                "AES/GCM-SIV/NoPadding", "AES/GCM-SIV/PKCS5PADDING", "AES/GCM-SIV/PKCS7PADDING",
+                "AES/CBC/NoPadding", "AES/CBC/PKCS5PADDING", "AES/CBC/PKCS7PADDING",
+                "AES/ECB/NoPadding", "AES/ECB/PKCS5PADDING", "AES/ECB/PKCS7PADDING",
+                "AES/CTR/NoPadding",  "AES/CTR/PKCS5PADDING",  "AES/CTR/PKCS7PADDING",
+                "AES/OFB/NoPadding", "AES/OFB/PKCS5PADDING", "AES/OFB/PKCS7PADDING",
+
+                "DESEDE/GCM/NoPadding", "DESEDE/GCM/PKCS5PADDING", "DESEDE/GCM/PKCS7PADDING",
+                "DESEDE/GCM-SIV/NoPadding", "DESEDE/GCM-SIV/PKCS5PADDING", "DESEDE/GCM-SIV/PKCS7PADDING",
+                "DESEDE/CBC/NoPadding", "DESEDE/CBC/PKCS5PADDING", "DESEDE/CBC/PKCS7PADDING",
+                "DESEDE/ECB/NoPadding", "DESEDE/ECB/PKCS5PADDING", "DESEDE/ECB/PKCS7PADDING",
+                "DESEDE/CTR/NoPadding",  "DESEDE/CTR/PKCS5PADDING",  "DESEDE/CTR/PKCS7PADDING",
+                "DESEDE/OFB/NoPadding", "DESEDE/OFB/PKCS5PADDING", "DESEDE/OFB/PKCS7PADDING",
+                "DES",
+                "ARC4",
+                "Blowfish",
+        };
+        String[] providerList = {"AndroidOpenSSL", "AndroidKeyStoreBCWorkaround", "BC",
+                "AndroidKeyStore", "" };
+
+        for(String algo: algoList){
+            for(String prov: providerList) {
+                try{
+                    Cipher md = prov.equals("") ? Cipher.getInstance(algo) : Cipher.getInstance(algo, prov);
+                    String pevides =  md.getProvider().getName();
+                    AlgorithmParameters apm  = md.getParameters();
+                    System.out.println("lulas: " + md.getAlgorithm());
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
 /*
     public void test_decrypt_algorithm(String algorithm, int times, String[] params){
         SymmetricEncrypt se = new SymmetricEncrypt(new DeviceCryptoPrimitives());
@@ -45,8 +88,6 @@ public class SymmetricEncryptTest {
             Map<String, IvParameterSpec> m = se.encrypt_all(target, algorithm, pk,"AndroidOpenSSL");
         }
     }
-
-
     @Test
     public void test_AES_AndroidKeyStore() {
         String msg = (String) StringType.genRandomWithSize(64).getValue();
@@ -101,9 +142,8 @@ public class SymmetricEncryptTest {
         SymmetricEncrypt se = new SymmetricEncrypt(new DeviceCryptoPrimitives());
         Map<String, IvParameterSpec> enc_res  = se.encrypt_all(msg, "AES", 256);
         assertNotNull(enc_res);
-    }*/
+    }
 
-    /*
     @Test
     public void test_blowfish() {
         String msg = (String) StringType.genRandomWithSize(123).getValue();

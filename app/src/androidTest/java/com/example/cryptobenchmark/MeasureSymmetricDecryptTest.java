@@ -1,6 +1,6 @@
 package com.example.cryptobenchmark;
 
-import android.support.test.runner.AndroidJUnit4;
+import androidx.test.runner.AndroidJUnit4;
 
 import com.example.cryptobenchmark.decrypt.symmetric.SymmetricDecrypt;
 import com.example.cryptobenchmark.decrypt.symmetric.DecryptOperation;
@@ -30,8 +30,9 @@ public class MeasureSymmetricDecryptTest extends MeasureTest {
     }
 
     // CHACHA20
-    @HunterDebug
+    
     @Test
+@HunterDebug
     public void test_CHA_CHA_20_AndroidOpenSSL() throws Exception {
         String algo = "ChaCha20";
         String provider = "AndroidOpenSSL";
@@ -40,11 +41,21 @@ public class MeasureSymmetricDecryptTest extends MeasureTest {
         DecryptOperation deo = SymmetricDecrypt::decrypt_ChaCha20;
         decrypt(deo, SECRET_KEY, params, provider, padd, mode, iv);
     }
+
+    
+    @Test
+@HunterDebug
+    public void test_CHA_CHA_20() throws Exception {
+        DecryptOperation deo = SymmetricDecrypt::decrypt_ChaCha20;
+        decrypt(deo, SECRET_KEY, params, PROVIDER, PADDING, MODE, iv);
+    }
+
     // DES/ECB/PKCS5PADDING
 
     // AES GCM
     @Test
-    @HunterDebug
+@HunterDebug
+    
     public void test_AES_GCM_NoPadding_AndroidKeyStore() throws Exception {
         String mode = "GCM";
         String padd = "NOPADDING";
@@ -54,7 +65,8 @@ public class MeasureSymmetricDecryptTest extends MeasureTest {
     }
 
     @Test
-    @HunterDebug
+@HunterDebug
+    
     public void test_AES_GCM_NoPadding_AndroidOpenSSL() throws Exception {
         String mode = "GCM";
         String padd = "NOPADDING";
@@ -66,7 +78,8 @@ public class MeasureSymmetricDecryptTest extends MeasureTest {
     // AES GCM - SIV
 
     @Test
-    @HunterDebug
+@HunterDebug
+    
     public void test_AES_GCM_siv_NoPadding_AndroidOpenSSL() throws Exception {
         String mode = "GCM-SIV";
         String padd = "NOPADDING";
@@ -78,7 +91,8 @@ public class MeasureSymmetricDecryptTest extends MeasureTest {
     // CBC
 
     @Test
-    @HunterDebug
+@HunterDebug
+    
     public void test_AES_CBC_NoPadding_AndroidOpenSSL() throws Exception {
         String mode = "CBC";
         String padd = "NOPADDING";
@@ -88,7 +102,8 @@ public class MeasureSymmetricDecryptTest extends MeasureTest {
     }
 
     @Test
-    @HunterDebug
+@HunterDebug
+    
     public void test_AES_CBC_PKCS7Padding_AndroidOpenSSL() throws Exception {
         String mode = "CBC";
         String padd = "PKCS7PADDING";
@@ -98,7 +113,8 @@ public class MeasureSymmetricDecryptTest extends MeasureTest {
     }
 
     @Test
-    @HunterDebug
+@HunterDebug
+    
     public void test_AES_CBC_PKCS5Padding_AndroidOpenSSL() throws Exception {
         String mode = "CBC";
         String padd = "PKCS5PADDING";
@@ -108,7 +124,8 @@ public class MeasureSymmetricDecryptTest extends MeasureTest {
     }
 
     @Test
-    @HunterDebug
+@HunterDebug
+    
     public void test_AES_ECB_NOPADDING_AndroidOpenSSL() throws Exception {
         String mode = "ECB";
         String padd = "NOPADDING";
@@ -118,7 +135,8 @@ public class MeasureSymmetricDecryptTest extends MeasureTest {
     }
 
     @Test
-    @HunterDebug
+@HunterDebug
+    
     public void test_AES_ECB_NOPADDING_AndroidKeyStoreBCWorkaround() throws Exception {
         String mode = "ECB";
         String padd = "NOPADDING";
@@ -129,7 +147,8 @@ public class MeasureSymmetricDecryptTest extends MeasureTest {
 
 
     @Test
-    @HunterDebug
+@HunterDebug
+    
     public void test_AES_ECB_PKCS5PADDING_AndroidOpenSSL() throws Exception {
         String mode = "ECB";
         String padd = "PKCS5PADDING";
@@ -139,7 +158,8 @@ public class MeasureSymmetricDecryptTest extends MeasureTest {
     }
 
     @Test
-    @HunterDebug
+@HunterDebug
+    
     public void test_AES_ECB_PKCS7PADDING_AndroidOpenSSL() throws Exception {
         String mode = "ECB";
         String padd = "PKCS7PADDING";
@@ -151,7 +171,8 @@ public class MeasureSymmetricDecryptTest extends MeasureTest {
     // CTR NO padding
 
     @Test
-    @HunterDebug
+@HunterDebug
+    
     public void test_AES_CTR_NOPADDING_AndroidOpenSSL() throws Exception {
         String mode = "CTR";
         String padd = "NOPADDING";
@@ -161,7 +182,8 @@ public class MeasureSymmetricDecryptTest extends MeasureTest {
     }
 
     @Test
-    @HunterDebug
+@HunterDebug
+    
     public void test_AES_CTR_NOPADDING_AndroidKeyStoreBCWorkaround() throws Exception {
         String mode = "CTR";
         String padd = "NOPADDING";
@@ -170,10 +192,19 @@ public class MeasureSymmetricDecryptTest extends MeasureTest {
         decrypt(deo, SECRET_KEY, params, provider, padd, mode, iv);
     }
 
+    @Test
+@HunterDebug
+    
+    public void test_AES() throws Exception {
+        DecryptOperation deo = SymmetricDecrypt::decrypt_AES;
+        decrypt(deo, SECRET_KEY, params, PROVIDER, PADDING, MODE, iv);
+    }
+
     // DES - ECB
 
     @Test
-    @HunterDebug
+@HunterDebug
+    
     public void test_DES_ECB_NOPADDING_BC() throws Exception {
         String mode = "ECB";
         String padd = "NOPADDING";
@@ -183,7 +214,8 @@ public class MeasureSymmetricDecryptTest extends MeasureTest {
     }
 
     @Test
-    @HunterDebug
+@HunterDebug
+    
     public void test_DES_ECB_PKCS5PADDING_BC() throws Exception {
         String mode = "ECB";
         String padd = "PKCS5PADDING";
@@ -193,7 +225,8 @@ public class MeasureSymmetricDecryptTest extends MeasureTest {
     }
 
     @Test
-    @HunterDebug
+@HunterDebug
+    
     public void test_DES_ECB_PKCS7PADDING_BC() throws Exception {
         String mode = "ECB";
         String padd = "PKCS7PADDING";
@@ -204,7 +237,8 @@ public class MeasureSymmetricDecryptTest extends MeasureTest {
 
     // DES - CTR
     @Test
-    @HunterDebug
+@HunterDebug
+    
     public void test_DES_CTR_NOPADDING_BC() throws Exception {
         String mode = "CTR";
         String padd = "NOPADDING";
@@ -214,7 +248,8 @@ public class MeasureSymmetricDecryptTest extends MeasureTest {
     }
 
     @Test
-    @HunterDebug
+@HunterDebug
+    
     public void test_DES_CTR_PKCS5PADDING_BC() throws Exception {
         String mode = "CTR";
         String padd = "PKCS5PADDING";
@@ -224,7 +259,8 @@ public class MeasureSymmetricDecryptTest extends MeasureTest {
     }
 
     @Test
-    @HunterDebug
+@HunterDebug
+    
     public void test_DES_CTR_PKCS7PADDING_BC() throws Exception {
         String mode = "CTR";
         String padd = "PKCS7PADDING";
@@ -236,7 +272,8 @@ public class MeasureSymmetricDecryptTest extends MeasureTest {
     // DES - CBC
 
     @Test
-    @HunterDebug
+@HunterDebug
+    
     public void test_DES_CBC_NOPADDING_BC() throws Exception {
         String mode = "CBC";
         String padd = "NOPADDING";
@@ -246,7 +283,8 @@ public class MeasureSymmetricDecryptTest extends MeasureTest {
     }
 
     @Test
-    @HunterDebug
+@HunterDebug
+    
     public void test_DES_CBC_PKCS5PADDING_BC() throws Exception {
         String mode = "CBC";
         String padd = "PKCS5PADDING";
@@ -256,7 +294,8 @@ public class MeasureSymmetricDecryptTest extends MeasureTest {
     }
 
     @Test
-    @HunterDebug
+@HunterDebug
+    
     public void test_DES_CBC_PKCS7PADDING_BC() throws Exception {
         String mode = "CBC";
         String padd = "PKCS7PADDING";
@@ -268,7 +307,8 @@ public class MeasureSymmetricDecryptTest extends MeasureTest {
     // DES - OFB
 
     @Test
-    @HunterDebug
+@HunterDebug
+    
     public void test_DES_OFB_NOPADDING_BC() throws Exception {
         String mode = "OFB";
         String padd = "NOPADDING";
@@ -278,7 +318,8 @@ public class MeasureSymmetricDecryptTest extends MeasureTest {
     }
 
     @Test
-    @HunterDebug
+@HunterDebug
+    
     public void test_DES_OFB_PKCS5PADDING_BC() throws Exception {
         String mode = "OFB";
         String padd = "PKCS5PADDING";
@@ -288,7 +329,8 @@ public class MeasureSymmetricDecryptTest extends MeasureTest {
     }
 
     @Test
-    @HunterDebug
+@HunterDebug
+    
     public void test_DES_OFB_PKCS7PADDING_BC() throws Exception {
         String mode = "OFB";
         String padd = "PKCS7PADDING";
@@ -297,10 +339,19 @@ public class MeasureSymmetricDecryptTest extends MeasureTest {
         decrypt(deo, SECRET_KEY, params, provider, padd, mode, iv);
     }
 
+    @Test
+@HunterDebug
+    
+    public void test_DES() throws Exception {
+        DecryptOperation deo = SymmetricDecrypt::decrypt_DES;
+        decrypt(deo, SECRET_KEY, params, PROVIDER, PADDING, MODE, iv);
+    }
+
     // 3DES (DESEDE) - CBC
 
     @Test
-    @HunterDebug
+@HunterDebug
+    
     public void test_3DES_CBC_NOPADDING_AndroidOpenSSL() throws Exception {
         String mode = "CBC";
         String padd = "NOPADDING";
@@ -310,7 +361,8 @@ public class MeasureSymmetricDecryptTest extends MeasureTest {
     }
 
     @Test
-    @HunterDebug
+@HunterDebug
+    
     public void test_3DES_CBC_PKCS5PADDING_AndroidOpenSSL() throws Exception {
         String mode = "CBC";
         String padd = "PKCS5PADDING";
@@ -320,7 +372,8 @@ public class MeasureSymmetricDecryptTest extends MeasureTest {
     }
 
     @Test
-    @HunterDebug
+@HunterDebug
+    
     public void test_3DES_CBC_PKCS7PADDING_AndroidOpenSSL() throws Exception {
         String mode = "CBC";
         String padd = "PKCS7PADDING";
@@ -332,7 +385,8 @@ public class MeasureSymmetricDecryptTest extends MeasureTest {
     // 3DES (DESEDE) - CBC
 
     @Test
-    @HunterDebug
+@HunterDebug
+    
     public void test_3DES_ECB_NOPADDING_AndroidKeyStoreBCWorkaround() throws Exception {
         String mode = "ECB";
         String padd = "NOPADDING";
@@ -342,7 +396,8 @@ public class MeasureSymmetricDecryptTest extends MeasureTest {
     }
 
     @Test
-    @HunterDebug
+@HunterDebug
+    
     public void test_3DES_ECB_PKCS7PADDING_AndroidKeyStoreBCWorkaround() throws Exception {
         String mode = "ECB";
         String padd = "PKCS7PADDING";
@@ -351,10 +406,20 @@ public class MeasureSymmetricDecryptTest extends MeasureTest {
         decrypt(deo, SECRET_KEY, params, provider, padd, mode, iv);
     }
 
+    @Test
+@HunterDebug
+    
+    public void test_3DES() throws Exception {
+        DecryptOperation deo = SymmetricDecrypt::decrypt_3DES;
+        decrypt(deo, SECRET_KEY, params, PROVIDER, PADDING, MODE, iv);
+    }
+
+
     // ARC4
 
     @Test
-    @HunterDebug
+@HunterDebug
+    
     public void test_ARC4_BC() throws Exception {
         String mode = "";
         String padd = "";
@@ -364,7 +429,8 @@ public class MeasureSymmetricDecryptTest extends MeasureTest {
     }
 
     @Test
-    @HunterDebug
+@HunterDebug
+    
     public void test_ARC4_AndroidOpenSSL() throws Exception {
         String mode = "";
         String padd = "";
@@ -373,15 +439,35 @@ public class MeasureSymmetricDecryptTest extends MeasureTest {
         decrypt(deo, SECRET_KEY, params, provider, padd, mode, iv);
     }
 
-    // BLOWFISH
-    @HunterDebug
     @Test
+@HunterDebug
+    
+    public void test_ARC4() throws Exception {
+        DecryptOperation deo = SymmetricDecrypt::decrypt_ARC4;
+        decrypt(deo, SECRET_KEY, params, PROVIDER, PADDING, MODE, iv);
+    }
+
+
+    // BLOWFISH
+    
+    @Test
+@HunterDebug
     public void test_BLOWFISH_BC() throws Exception {
         String mode = "";
         String padd = "";
         String provider = "BC";
         DecryptOperation deo = SymmetricDecrypt::decrypt_BLOWFISH;
         decrypt(deo, SECRET_KEY, params, provider, padd, mode, iv);
+    }
+
+    
+    @Test
+@HunterDebug
+    public void test_BLOWFISH() throws Exception {
+        String mode = "";
+        String padd = "";
+        DecryptOperation deo = SymmetricDecrypt::decrypt_BLOWFISH;
+        decrypt(deo, SECRET_KEY, params, PROVIDER, padd, mode, iv);
     }
 
 }

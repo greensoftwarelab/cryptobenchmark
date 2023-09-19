@@ -14,6 +14,7 @@ import java.security.Key;
 import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import javax.crypto.SecretKey;
@@ -26,9 +27,11 @@ import static com.example.cryptobenchmark.keygen.symmetric.SymmetricKeyGen.gen_k
 import static com.example.cryptobenchmark.keygen.symmetric.SymmetricKeyGen.gen_key_BLOWFISH;
 import static com.example.cryptobenchmark.keygen.symmetric.SymmetricKeyGen.gen_key_ChaCha20;
 import static com.example.cryptobenchmark.keygen.symmetric.SymmetricKeyGen.gen_key_DES;
+import static com.example.cryptobenchmark.keygen.symmetric.SymmetricKeyGen.gen_key_ARC4;
 
 public class MeasureTest {
 
+   
     public static int inputSize = Integer.parseInt(BuildConfig.INPUT_SIZE);
     public static int keyLen = Integer.parseInt(BuildConfig.KEY_LEN);
     public static int nTimes = Integer.parseInt(BuildConfig.N_TIMES);
@@ -39,11 +42,16 @@ public class MeasureTest {
     public static String ALGORITHM = BuildConfig.ALGORITHM;
     public static String MODE = BuildConfig.MODE;
     public static String PADDING = BuildConfig.PADDING;
+    public static boolean WITH_KEY_SPEC = Integer.parseInt(BuildConfig.WITH_KEY_SPEC) == 1;
+
+    public static int STACK_SIZE_LIM = 14 * 1024 * 1024; // 16KB - safe threshold (16-2);
+
 
     public static void encrypt_decrypt(EncryptOperation so, DecryptOperation sdo,
                                        Key sk, String[] params,
                                        String provider, String padding, String mode) throws Exception {
-        for (String param : params) {
+        for (int i = 0; i < nTimes; i++) {
+            String param = params[ i % params.length];
             Map.Entry<String, IvParameterSpec> res = so.encrypt(param, mode, padding, sk, provider);
             String originaltext = sdo.decrypt(res.getKey(), mode, padding, sk, provider, res.getValue());
             if(! originaltext.equals(param)){
@@ -55,7 +63,8 @@ public class MeasureTest {
     public static void encrypt_decrypt(EncryptOperation so, DecryptOperation sdo,
                                        Key pk, Key sk, String[] params,
                                        String provider, String padding, String mode) throws Exception {
-        for (String param : params) {
+        for (int i = 0; i < nTimes; i++) {
+            String param = params[ i % params.length];
             Map.Entry<String, IvParameterSpec> res = so.encrypt(param, mode, padding, pk, provider);
             String originaltext = sdo.decrypt(res.getKey(), mode, padding, sk, provider, res.getValue());
             if(! originaltext.equals(param)){
@@ -64,9 +73,35 @@ public class MeasureTest {
         }
     }
 
+    public static void decrypt(DecryptOperation sdo,
+                               Key sk, List<Map.Entry<String, IvParameterSpec>> cyphered_stuff,
+                               String provider, String padding, String mode) throws Exception {
+        for (int i = 0; i < cyphered_stuff.size() ; i++) {
+            String originaltext = sdo.decrypt(cyphered_stuff.get(i).getKey(), mode, padding, sk, provider,
+                    cyphered_stuff.get(i).getValue());
+            if(! originaltext.equals(INPUT_MESSAGES[i])){
+                throw new Exception("original message does not match final result");
+            }
+        }
+    }
+
+    public static void encrypt(EncryptOperation so, Key pk, String[] params, String provider,
+                               String padding, String mode) throws Exception {
+        for (int i = 0; i < nTimes; i++) {
+            String param = params[ i % params.length];
+            Map.Entry<String, IvParameterSpec> res = so.encrypt(param, mode, padding, pk, provider);
+            if(res.getKey() == null){
+                throw new Exception("cyphertext is null");
+            }
+        }
+    }
+
+
+
     public static void encrypt_symmetric(EncryptOperation so, SecretKey sk, String[] params,
                                          String provider, String padding, String mode) throws Exception {
-        for (String param : params) {
+        for (int i = 0; i < nTimes; i++) {
+            String param = params[ i % params.length];
             Map.Entry<String, IvParameterSpec> res = so.encrypt(param, mode, padding, sk, provider);
             if(res.getKey() == null){
                 throw new Exception("cyphered text is null");
@@ -90,7 +125,7 @@ public class MeasureTest {
             return gen_key_ChaCha20(keyLen, provider);
         }
         if (algo.toLowerCase().contains("blowfish")){
-            return gen_key_BLOWFISH(keyLen, mode, padding, provider);
+            return gen_key_BLOWFISH(keyLen, provider);
         }
         else if (algo.equalsIgnoreCase("des")){
             return  gen_key_DES(keyLen, mode, padding, provider);
@@ -107,16 +142,23 @@ public class MeasureTest {
                 return gen_key_AES(keyLen, mode, padding, provider);
             }
         }
+        else if (algo.equalsIgnoreCase("rc4")){
+            return gen_key_ARC4(keyLen, provider);
+        }
 
         return null;
     }
 
     public static KeyPair gen_key_pair(int keyLen, String algorithm, String provider,
-                                       String mode, String padding){
+                                       String mode, String padding, boolean withKeySpec){
         try {
-            if (provider.equalsIgnoreCase("AndroidKeyStore")){
+            if (provider.toLowerCase().contains("androidkeystore")){
                 if(algorithm.toLowerCase().contains("rsa")){
-                        return AssymmetricEncryptKeyGen.gen_key_RSA(keyLen, mode, padding);
+                    if (withKeySpec){
+                        return AssymmetricEncryptKeyGen.gen_key_rsakeyspec(keyLen, mode,
+                                padding, provider);
+                    }
+                    return AssymmetricEncryptKeyGen.gen_key_RSA(keyLen, mode, padding);
                 }
                 else if(algorithm.toLowerCase().contains("dsa")){
                     return gen_dsa_key(keyLen);
@@ -164,7 +206,8 @@ public class MeasureTest {
 
     public static String[] gen_random_workload(int size, int times){
         String[] res = new String[times];
-        DataType[] dt = StringType.genRandomWithSize(size, times);
+        int max_times  = times % (STACK_SIZE_LIM / size ) ;
+        DataType[] dt = StringType.genRandomWithSize(size, max_times);
         for (int i = 0; i < dt.length; i++) {
             res[i] = ((String) dt[i].getValue());
         }

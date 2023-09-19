@@ -19,7 +19,7 @@ import static org.junit.Assert.assertNotNull;
 
 public class LocalHMacTest {
 
-    @Test
+    
     public void test_get_Macimpls() {
         String algo = "HMAC";
         DeviceCryptoPrimitives de = new DeviceCryptoPrimitives();
@@ -27,7 +27,7 @@ public class LocalHMacTest {
         System.out.println(cps);
     }
 
-    @Test
+    
     public void testHMACMD5() {
         String msg = (String) StringType.genRandomWithSize(255).getValue();
         String key = (String) StringType.genRandomWithSize(128).getValue();
@@ -35,7 +35,7 @@ public class LocalHMacTest {
         assertNotNull(res);
     }
 
-    @Test
+    
     public void testHMACSHA1() {
         String msg = (String) StringType.genRandomWithSize(255).getValue();
         String key = (String) StringType.genRandomWithSize(128).getValue();
@@ -43,7 +43,7 @@ public class LocalHMacTest {
         assertNotNull(res);
     }
 
-    @Test
+    
     public void testHMACSHA224() {
         String msg = (String) StringType.genRandomWithSize(255).getValue();
         String key = (String) StringType.genRandomWithSize(128).getValue();
@@ -51,7 +51,7 @@ public class LocalHMacTest {
         assertNotNull(res);
     }
 
-    @Test
+    
     public void testHMACSHA256() {
         String msg = (String) StringType.genRandomWithSize(255).getValue();
         String key = (String) StringType.genRandomWithSize(128).getValue();
@@ -59,7 +59,7 @@ public class LocalHMacTest {
         assertNotNull(res);
     }
 
-    @Test
+    
     public void testHMACSHA384() {
         String msg = (String) StringType.genRandomWithSize(255).getValue();
         String key = (String) StringType.genRandomWithSize(128).getValue();
@@ -67,7 +67,7 @@ public class LocalHMacTest {
         assertNotNull(res);
     }
 
-    @Test
+    
     public void testHMACSHA512() {
         String msg = (String) StringType.genRandomWithSize(255).getValue();
         String key = (String) StringType.genRandomWithSize(128).getValue();

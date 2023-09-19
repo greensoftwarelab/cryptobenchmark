@@ -1,6 +1,6 @@
 package com.example.cryptobenchmark;
 
-import android.support.test.runner.AndroidJUnit4;
+import androidx.test.runner.AndroidJUnit4;
 
 import com.example.cryptobenchmark.digest.Digest;
 import com.example.cryptobenchmark.misc.DeviceCryptoPrimitives;
@@ -67,37 +67,37 @@ public class DigestTest {
         }
     }
 
-    @HunterDebug
+    
     @Test
     public void test_md5(){
         execute_digest_algorithm("MD5", inputs, provider);
     }
 
-    @HunterDebug
+    
     @Test
     public void test_sha1(){
         execute_digest_algorithm("SHA1", inputs, provider);
     }
 
-    @HunterDebug
+    
     @Test
     public void test_sha224(){
         execute_digest_algorithm("SHA224", inputs, provider);
     }
 
-    @HunterDebug
+    
     @Test
     public void test_sha256(){
         execute_digest_algorithm("SHA256", inputs, provider);
     }
 
     @Test
-    @HunterDebug
+    
     public void test_sha384(){
         execute_digest_algorithm("SHA384", inputs, provider);
     }
 
-    @HunterDebug
+    
     @Test
     public void test_sha512(){
         execute_digest_algorithm("SHA512", inputs, provider);

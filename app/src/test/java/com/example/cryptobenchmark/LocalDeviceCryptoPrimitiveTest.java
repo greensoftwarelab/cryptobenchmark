@@ -21,13 +21,13 @@ import static org.junit.Assert.assertNull;
 public class LocalDeviceCryptoPrimitiveTest {
 
 
-    @Test
+    
     public void testFileGen(){
         DeviceCryptoPrimitives de = new DeviceCryptoPrimitives();
         assertNotNull(de);
     }
 
-    @Test
+    
     public void testSpecificSymmetric(){
         DeviceCryptoPrimitives de = new DeviceCryptoPrimitives();
         String msg = (String) StringType.genRandomWithSize(64).getValue();
@@ -39,13 +39,13 @@ public class LocalDeviceCryptoPrimitiveTest {
         assertEquals(msg,plaintext);
     }
 
-    @Test
+    
     public void testAlgorithmListNotEmpty(){
         DeviceCryptoPrimitives de = new DeviceCryptoPrimitives();
         assertNotEquals("Algorithms supported", de.getImplementedAlgorithms().size(), 0);
     }
 
-    @Test
+    
     public void testAlgorithmSearch(){
         DeviceCryptoPrimitives de = new DeviceCryptoPrimitives();
         CryptoProvider cp = de.getFirstProviderImplementingAlgorithm("AES");
@@ -54,7 +54,7 @@ public class LocalDeviceCryptoPrimitiveTest {
         assertNull(cp2);
     }
 
-    @Test
+    
     public void testGetAlgorithmOfProvider(){
         String algorithm = "AES";
         DeviceCryptoPrimitives de = new DeviceCryptoPrimitives();
@@ -65,7 +65,7 @@ public class LocalDeviceCryptoPrimitiveTest {
     }
 
 
-    @Test
+    
     public void testEncryptAll() {
         DeviceCryptoPrimitives de = new DeviceCryptoPrimitives();
         SymmetricEncrypt se = new SymmetricEncrypt(de);

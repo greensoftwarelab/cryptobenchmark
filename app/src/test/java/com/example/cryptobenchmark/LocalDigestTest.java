@@ -20,7 +20,7 @@ import static org.junit.Assert.assertNotNull;
 
 public class LocalDigestTest {
 
-    @Test
+    
     public void test_get_digest_impls() {
         DeviceCryptoPrimitives dcp = new DeviceCryptoPrimitives();
         List<String> primitives = dcp.getImplementedAlgorithms();

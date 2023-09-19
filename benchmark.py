@@ -48,22 +48,29 @@ def execute_shell_command(cmd, args=[], timeout=None):
         print(f"Energy consumed: {p} Joules")
         time.sleep(args_obj.sleep_time)'''
 
+
 def measure(args_obj):
     #arch -x86_64 python anadroid/main.py -t Custom -cmd "ls -al; sleep 30"'
-    cmd_prefix = 'arch -x86_64 pyanadroid -run -t Custom -cmd'
-    for i in range(0, args_obj.n_times):
-        cmd = f'{cmd_prefix} \"{build_exec_cmd(args_obj)}\"'
-        print(f"ai vai o cmd {cmd}")
-        res, o , e = execute_shell_command(cmd)
-        print(res)
-        print(o)
-        print(e)
-        if res != 0:
-            raise Exception(f"Error while running cmd {CMD}")
-        time.sleep(args_obj.sleep_time)
+    cmd_prefix = f'arch -x86_64 pyanadroid -run -t Custom --n_times {args_obj.n_times}  -cmd'
+    #print(args_obj.n_times)
+    #for i in range(0, args_obj.n_times):
+    cmd = f'{cmd_prefix} \"{build_exec_cmd(args_obj)}\"'
+    print(f"ai vai o cmd {cmd}")
+    res, o , e = execute_shell_command(cmd)
+    print(res)
+    print(o)
+    print(e)
+    if res != 0:
+        raise Exception(f"Error while running cmd {CMD}")
+    '''else:
+        res_files0 = list(filter(lambda x: '0' in x, fetch_res_files(results_dir="anadroid_results/custom_test_results")))
+        for f in res_files0:
+            shutil.move(f, f.replace('0', f'{i}'))'''
+    time.sleep(args_obj.sleep_time)
+
 
 def fetch_res_files(results_dir=""):
-    return [x for x in os.listdir(results_dir) if 'manafa_res' in x]
+    return [os.path.join(results_dir, x) for x in os.listdir(results_dir) if 'manafa_res' in x]
 
 
 def parse_json(filepath):
@@ -90,7 +97,6 @@ def gen_box_plot(key_list, list_of_lists, title="ai"):
     # eg gen_box_plot(['group1', 'group2'], [[1, 2],[3, 4]]):
     fig1, en_box = plt.subplots()
     the_list = list_of_lists
-
     bp_dict = en_box.boxplot(x=the_list,
                              notch=False,  # notch shape
                              vert=True,  # vertical box aligmnent
@@ -101,7 +107,7 @@ def gen_box_plot(key_list, list_of_lists, title="ai"):
     for line in bp_dict['medians']:
         x, y = line.get_xydata()[1]  # top of median line
         xx, yy = line.get_xydata()[0]
-        text(x, y, '%.2f' % y, fontsize=5)  # draw above, centered
+        text(x, y, '%.4f' % y, fontsize=5)  # draw above, centered
         # text(xx, en_box.get_ylim()[1] * 0.98, '%.2f' % np.average(list_all_samples[i]), color='darkkhaki')
         i = i + 1
 
@@ -119,6 +125,7 @@ def gen_box_plot(key_list, list_of_lists, title="ai"):
 
 
 def plot_res(res):
+    print(res)
     filtro = ""
     keys = [ x for x in list(res.keys()) if filtro in x]
     times = [ b['times'] for a,b in res.items() if filtro in a]
@@ -156,6 +163,7 @@ def gen_run_id(args_obj):
 
 
 def save_res_in_id_folder(run_id, file_list):
+    print(f"lista files: {file_list}")
     if not os.path.exists(run_id):
         os.mkdir(run_id)
     for f in file_list:
@@ -165,19 +173,19 @@ def save_res_in_id_folder(run_id, file_list):
 def main(args_obj):
     if args_obj.build: 
         build_apks(args_obj)
-    exit(0)
     if args_obj.install:
         install_apks(args_obj.build_type)
     measure(args_obj)
-    files = fetch_res_files(results_dir="")
+    files = fetch_res_files(results_dir="anadroid_results/custom_test_results")
+    print(files)
     fc = extract_values_from_files(files)
-    run_id = gen_run_id(args_obj, fc)
-    save_res_in_id_folder(run_id)
+    run_id = gen_run_id(args_obj)
+    save_res_in_id_folder(run_id, files)
     print(json.dumps(fc, indent=1))
     if args_obj.plot:
         plot_res(fc)
     if args_obj.uninstall:
-        uninstall_apks()
+        uninstall_apks(args_obj)
 
 
 def build_exec_cmd(args_obj):
@@ -188,9 +196,9 @@ def build_exec_cmd(args_obj):
 
 def build_build_cmd(args_obj):
     prop_keys = get_keys_of_prop_file()
-    prop_fmt_keys = list(filter(lambda x: x.upper() in prop_keys, args_obj.__dict__.keys()))
+    prop_fmt_keys = list(filter(lambda x: x.upper() in prop_keys or x != 'n_times', args_obj.__dict__.keys()))
     res = " ".join([f"-P{k.upper()}={args_obj.__dict__[k]}" for k in prop_fmt_keys])
-    cmd = f"./gradlew assemble{args_obj.build_type} assembleAndroidTest {res}"
+    cmd = f"./gradlew assemble{args_obj.build_type} assembleAndroidTest {res} -DtestBuildType={args_obj.build_type.lower()}"
     print(f"build command: {cmd}")
     return cmd
 
@@ -232,14 +240,14 @@ if __name__ == '__main__':
     parser.add_argument("-p", "--plot", help="plot results", action='store_true', default=False)
     parser.add_argument("-c", "--test_class", help="test class", default="DigestTest", choices=["MeasureDigestTest",
     "MeasureHMACTest", "MeasureSymmetricTest", "MeasureSymmetricDecryptTest"])
-    parser.add_argument("-r", "--test_runner", help="unit test runner", default="android.support.test.runner.AndroidJUnitRunner", choices=["android.support.test.runner.AndroidJUnitRunner"])
+    parser.add_argument("-r", "--test_runner", help="unit test runner", default="android.support.test.runner.AndroidJUnitRunner", choices=["android.support.test.runner.AndroidJUnitRunner", "androidx.test.runner.AndroidJUnitRunner"])
     parser.add_argument("-tp", "--test_package", help="test package",  default="com.example.cryptobenchmark.test")
-    parser.add_argument("-nt", "--n_times", help="times to repeat each algorithm execution",  default=1, type=int)
+    parser.add_argument("-nt", "--n_times", help="times to repeat each execution",  default=1, type=int)
     parser.add_argument("-s", "--sleep_time", help="time to sleep betweeen each execution",  default=3, type=int)
     parser.add_argument("-pv", "--provider", help="crypto provider", default=fetch_from_gradle_prop_file("PROVIDER", "AndroidOpenSSL"), type=str)
     parser.add_argument("-is", "--input_size", help="input size",  default=fetch_from_gradle_prop_file("INPUT_SIZE", 128), type=int)
     parser.add_argument("-kl", "--key_len", help="key length",  default=fetch_from_gradle_prop_file("KEY_LEN", 128), type=int)
-    parser.add_argument("-a", "--algorithm", help="algorithm to execute",  default=fetch_from_gradle_prop_file("ALGORITHM", "AES"), type=str)
+    parser.add_argument("-a", "--algorithm", help="algorithm to execute",  default=fetch_from_gradle_prop_file("ALGORITHM", ""), type=str)
     parser.add_argument("-m", "--algorithm_mode", help="algorithm mode",  default=fetch_from_gradle_prop_file("MODE", ""), type=str)
     parser.add_argument("-padding", "--padding", help="algorithm padding",  default=fetch_from_gradle_prop_file("PADDING", ""), type=str)
     args = parser.parse_args()

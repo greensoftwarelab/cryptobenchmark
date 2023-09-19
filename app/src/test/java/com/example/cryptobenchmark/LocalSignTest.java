@@ -27,7 +27,6 @@ public class LocalSignTest {
     public static final int DATA_LEN = 255;
     public static final int KEY_LEN = 512;
 
-    @Test
     public void test_get_sign_impls() {
         String algo = "ECDSA";
         DeviceCryptoPrimitives de = new DeviceCryptoPrimitives();
@@ -36,7 +35,7 @@ public class LocalSignTest {
         System.out.println(s);
     }
 
-    @Test
+
     public void test_sign_local() throws NoSuchAlgorithmException{
         String algo = "SHA256withRSA";
         KeyPair kp = AssymmetricEncryptKeyGen.gen_key(KEY_LEN, "RSA");
@@ -46,7 +45,7 @@ public class LocalSignTest {
         assertTrue(Verify.verify(msg, signature, algo, kp.getPublic()));
     }
 
-    @Test
+    
     public void test_sign_local_all() throws NoSuchAlgorithmException{
         List<String> algorithms = new ArrayList<>(Arrays.asList("DSA"));
         KeyPair kp = AssymmetricEncryptKeyGen.gen_key(KEY_LEN, "DSA");

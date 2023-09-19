@@ -2,7 +2,7 @@ package com.example.cryptobenchmark.keygen.symmetric;
 
 import android.security.keystore.KeyGenParameterSpec;
 import android.security.keystore.KeyProperties;
-
+import javax.crypto.spec.SecretKeySpec;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -120,6 +120,7 @@ public class SymmetricKeyGen {
             e.printStackTrace();
             return null;
         }
+        keygenerator.init(keysize);
         return  keygenerator.generateKey();
     }
 
@@ -134,6 +135,7 @@ public class SymmetricKeyGen {
             e.printStackTrace();
             return null;
         }
+        keygenerator.init(keysize);
         return  keygenerator.generateKey();
     }
 
@@ -161,7 +163,7 @@ public class SymmetricKeyGen {
             e.printStackTrace();
             return null;
         }
-
+        keygenerator.init(keysize);
         return  keygenerator.generateKey();
     }
 
@@ -186,7 +188,7 @@ public class SymmetricKeyGen {
             e.printStackTrace();
             return null;
         }
-
+        keygenerator.init(keysize);
         return  keygenerator.generateKey();
     }
 
@@ -201,10 +203,11 @@ public class SymmetricKeyGen {
             e.printStackTrace();
             return null;
         }
+        keygenerator.init(keysize);
         return  keygenerator.generateKey();
     }
 
-    public static SecretKey gen_key_BLOWFISH(int keysize, String mode, String padding,
+    public static SecretKey gen_key_BLOWFISH(int keysize,
                                                 String provider){
         KeyGenerator keygenerator = null;
         try {
@@ -213,6 +216,19 @@ public class SymmetricKeyGen {
             e.printStackTrace();
             return null;
         }
+        keygenerator.init(keysize);
+        return  keygenerator.generateKey();
+    }
+
+    public static SecretKey gen_key_ARC4(int keysize, String provider){
+        KeyGenerator keygenerator = null;
+        try {
+            keygenerator = KeyGenerator.getInstance("ARC4", provider);
+        } catch (NoSuchAlgorithmException | NoSuchProviderException e) {
+            e.printStackTrace();
+            return null;
+        }
+        keygenerator.init(keysize);
         return  keygenerator.generateKey();
     }
 
@@ -224,6 +240,7 @@ public class SymmetricKeyGen {
             e.printStackTrace();
             return null;
         }
+        keygenerator.init(keysize);
         return  keygenerator.generateKey();
     }
 
@@ -235,6 +252,7 @@ public class SymmetricKeyGen {
             e.printStackTrace();
             return null;
         }
+        keygenerator.init(keysize);
         return  keygenerator.generateKey();
     }
 

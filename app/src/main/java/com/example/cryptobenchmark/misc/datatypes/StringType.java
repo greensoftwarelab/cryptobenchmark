@@ -19,21 +19,21 @@ public class StringType implements DataType{
         this.value = value;
     }
 
-    public static DataType genRandomWithSize(int size){
+    public static DataType genRandomWithSize(int size_bytes){
         SecureRandom rnd = new SecureRandom();
-        byte[] token = new byte[size];
+        byte[] token = new byte[size_bytes];
         rnd.nextBytes(token);
-        return new StringType(byteArrayToString(token).substring(0, size));
+        return new StringType(byteArrayToString(token).substring(0, size_bytes));
         //System.out.println(token.length);
         //return new StringType(byteArrayToString(token));
     }
 
-    public static DataType genPseudoRandomWithSize(int size, int seed){
+    public static DataType genPseudoRandomWithSize(int size_bytes, int seed){
         Random rnd =  new Random();
         rnd.setSeed(seed);
-        byte[] token = new byte[size];
+        byte[] token = new byte[size_bytes];
         rnd.nextBytes(token);
-        return new StringType(byteArrayToString(token).substring(0, size));
+        return new StringType(byteArrayToString(token).substring(0, size_bytes));
     }
 
     public static DataType[] genRandomWithSize(int size, int count){

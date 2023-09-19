@@ -1,6 +1,6 @@
 package com.example.cryptobenchmark;
 
-import android.support.test.runner.AndroidJUnit4;
+import androidx.test.runner.AndroidJUnit4;
 
 import com.example.cryptobenchmark.decrypt.assymmetric.AssymmetricDecrypt;
 import com.example.cryptobenchmark.encrypt.assymmetric.AssymmetricEncrypt;
@@ -26,7 +26,7 @@ import javax.crypto.spec.IvParameterSpec;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-
+import com.hunter.library.debug.HunterDebug;
 
 /**
  * Instrumented test, which will execute on an Android device.
@@ -43,6 +43,7 @@ public class AssymmetricEncryptTest {
 
 
     @Test
+    @HunterDebug
     public void test_sample_rsa() throws InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchProviderException {
         String algo = "RSA", mode = "ECB", padding = "PKCS1PADDING";
         //KeyPair kp = AssymmetricEncryptKeyGen.gen_key_RSA_AndroidKeyStore(512);
@@ -59,6 +60,7 @@ public class AssymmetricEncryptTest {
     }
 
     @Test
+    @HunterDebug
     public void test_rsa_PKCS1PADDING() throws InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchProviderException {
         String algo = "RSA", mode = "ECB", padding = "PKCS1PADDING";
         //KeyPair kp = AssymmetricEncryptKeyGen.gen_key_RSA_AndroidKeyStore(512);
@@ -74,6 +76,7 @@ public class AssymmetricEncryptTest {
     }
 
     @Test
+    @HunterDebug
     public void test_rsa_OAEPPADDING() throws InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchProviderException {
         String algo = "RSA", mode = "ECB", padding = "OAEPPADDING";
         //KeyPair kp = AssymmetricEncryptKeyGen.gen_key_RSA_AndroidKeyStore(512);
@@ -92,6 +95,7 @@ public class AssymmetricEncryptTest {
     }
 
     @Test
+    @HunterDebug
     public void test_rsa_OAEPWITHSHA_1ANDMGF1PADDING() throws InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchProviderException {
         String algo = "RSA", mode = "ECB", padding = "OAEPWITHSHA-1ANDMGF1PADDING";
         //KeyPair kp = AssymmetricEncryptKeyGen.gen_key_RSA_AndroidKeyStore(512);

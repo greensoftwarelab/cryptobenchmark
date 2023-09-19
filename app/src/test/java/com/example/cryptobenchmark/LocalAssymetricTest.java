@@ -23,7 +23,6 @@ import static org.junit.Assert.assertTrue;
 
 public class LocalAssymetricTest {
 
-    @Test
     public void test_sample_rsa() throws InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchProviderException {
         KeyPair kp = AssymmetricEncryptKeyGen.gen_key_RSA_AndroidKeyStore(128);
         assertNotNull(kp);

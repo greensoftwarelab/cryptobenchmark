@@ -12,9 +12,7 @@ import java.security.NoSuchProviderException;
 import java.security.SecureRandom;
 import java.security.spec.DSAParameterSpec;
 import java.security.spec.RSAKeyGenParameterSpec;
-
 public class AssymmetricEncryptKeyGen {
-
 
     public static KeyPair  gen_key_RSA_AndroidKeyStore(int keylen) throws NoSuchProviderException, NoSuchAlgorithmException, InvalidAlgorithmParameterException {
         KeyPairGenerator keyPairGenerator = java.security.KeyPairGenerator.getInstance(KeyProperties.KEY_ALGORITHM_RSA, "AndroidKeyStore");

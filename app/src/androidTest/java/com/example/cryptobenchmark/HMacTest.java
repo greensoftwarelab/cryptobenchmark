@@ -15,6 +15,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.crypto.Mac;
+
 import static com.example.cryptobenchmark.DigestTest.gen_random_workload;
 import static com.example.cryptobenchmark.mac.HMAC.mac_MD5;
 import static com.example.cryptobenchmark.mac.HMAC.mac_SHA1;
@@ -34,6 +36,33 @@ public class HMacTest {
     public static int cool_down_time = Integer.parseInt(BuildConfig.COOL_DOWN_TIME);
     public static String provider =BuildConfig.PROVIDER;
     public static String[] inputs =  gen_random_workload(inputSize, nTimes);
+
+
+
+    @Test
+    public void test_get_Macimpl() {
+        String[] algoList = {
+                //"MD5", "SHA1", "SHA224", "SHA256", "SHA384" ,"SHA512"
+                "HMACMD5", "HMACSHA1", "HMACSHA224", "HMACSHA256", "HMACSHA384" ,"HMACSHA512"
+        };
+        String[] providerList = {"AndroidOpenSSL", "AndroidKeyStoreBCWorkaround", "BC",
+
+                "AndroidKeyStore", "" };
+
+        for(String algo: algoList){
+            for(String prov: providerList) {
+                try{
+
+                    //MessageDigest md = prov.equals("") ? java.security.MessageDigest.getInstance(algo) : java.security.MessageDigest.getInstance(algo, prov);
+                    Mac md = prov.equals("") ? Mac.getInstance(algo) : Mac.getInstance(algo, prov);
+                    String pevides =  md.getProvider().getName();
+                    System.out.println("lulas: " + md.getAlgorithm());
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
 
     @Before
     public void before_tests(){

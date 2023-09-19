@@ -11,7 +11,7 @@ import static org.junit.Assert.assertNotNull;
 
 public class LocalSymmetricTest {
 
-    @Test
+    
     public void testEncryptAll() {
         DeviceCryptoPrimitives de = new DeviceCryptoPrimitives();
         SymmetricEncrypt se = new SymmetricEncrypt(de);

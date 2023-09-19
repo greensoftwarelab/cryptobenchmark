@@ -1,7 +1,6 @@
-plugins {
-    id 'com.android.application'
-    id 'hunter-debug'
-}
+apply plugin: 'com.android.application'
+apply plugin: 'hunter-debug'
+
 android {
     compileSdkVersion 27
     buildToolsVersion '27.0.3'
@@ -23,7 +22,8 @@ android {
         buildConfigField "String", "WARM_UP_TIME", "\"$WARM_UP_TIME\""
 
     }
-    testBuildType "release" // WARNING: this seems to break instrumentation test execution via Android Studio
+    testBuildType System.getProperty('testBuildType', 'debug')
+    //testBuildType "release" // WARNING: this seems to break instrumentation test execution via Android Studio
     signingConfigs {
 
         release {
@@ -40,13 +40,9 @@ android {
     buildTypes {
         release {
             signingConfig signingConfigs.release
-        }
-    }
-
-    buildTypes {
-        release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        
         }
     }
     compileOptions {
@@ -57,7 +53,6 @@ android {
         unitTests {
             includeAndroidResources = true
         }
-
     }
 }
 

@@ -1,7 +1,7 @@
 package com.example.cryptobenchmark;
 
 import android.content.Context;
-import android.support.test.InstrumentationRegistry;
+import androidx.test.platform.app.InstrumentationRegistry;
 import android.util.Log;
 
 import com.example.cryptobenchmark.encrypt.symmetric.SymmetricEncrypt;

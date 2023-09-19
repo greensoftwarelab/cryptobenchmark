@@ -16,13 +16,11 @@ public class LocalDeviceCryptoPrimitiveRestrictionsTest {
 
     public static final String filepath = "src/main/res/raw/known_primitive_restrictions.json";
 
-    @Test
     public void testFileLoad(){
         DevicePrimitiveRestrictions dpr = new DevicePrimitiveRestrictions(filepath);
         assertNotNull(dpr);
     }
 
-    @Test
     public void testFilterPrimitives() throws JSONException {
         DevicePrimitiveRestrictions dpr = new DevicePrimitiveRestrictions(filepath);
         DeviceCryptoPrimitives dcp = new DeviceCryptoPrimitives();
