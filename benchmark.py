@@ -1,16 +1,87 @@
-from operator import inv
-from re import T
 import shutil
-from manafa.hunter_emanafa import HunterEManafa
 from subprocess import TimeoutExpired, Popen, PIPE
 from pylab import *
 import time
 import os, json
 import argparse
-
+import re
+import threading
+from com.dtmilano.android.viewclient import ViewClient
 
 #CMD="adb shell am instrument -w -m  -e debug false -e class 'com.example.cryptobenchmark.MeasureDigestTest' com.example.cryptobenchmark.test/android.support.test.runner.AndroidJUnitRunner"
 CMD="adb shell am instrument -w -m -e debug false -e class 'com.example.cryptobenchmark.{test_class}' {test_package}/{test_runner}"
+
+LOW_BATTERY_LEVEL=5
+
+
+def is_screen_dreaming():
+    """Checks if screen is dreaming.
+    Returns:
+        bool: True if dreaming, False otherwise.
+    """
+    #res = execute_shell_command("adb shell dumpsys window", args=[])
+    #is_dreaming = "true" in re.search(" dreaming=(true|false|null)", res[1].decode("utf-8", errors='replace')).groups()[0].lower() \
+    #                or "true" in re.search(" mDreamingLockscreen=(true|false|null)", res[1].decode("utf-8", errors='replace')).groups()[0].lower()
+    res = execute_shell_command("adb shell dumpsys power", args=[])
+    output = res[1].decode("utf-8", errors='replace')
+    is_dreaming = 'true'in re.search("mHoldingDisplaySuspendBlocker=(true|false|null)", output).groups()[0].lower()
+    return is_dreaming
+
+
+def is_screen_unlocked():
+    """Checks if screen is unlocked.
+    Returns:
+        bool: True if unlocked, False otherwise.
+    """
+    res = execute_shell_command("arch -x86_64 pyanadroid -dev is_screen_unlocked", args=[])
+    is_locked = "true" in res[1].decode("utf-8", errors='replace').lower()
+    return is_locked
+
+def unlock_screen(pwd=None):
+    """unlock device screen.
+    Tries several approaches to unlock screen. It starts by trying to press lock button, followed by trying
+    to type a password if a password is required. If none of these worked, tries to press menu button and finally,
+    it tries to perform a swipe up.
+    Args:
+        pwd: password to provide if devices requires password to be unlocked.
+    """
+    cmd = f'arch -x86_64 pyanadroid -dev unlock_screen'
+    #print(args_obj.n_times)
+    #for i in range(0, args_obj.n_times):
+    res, o , e = execute_shell_command(cmd)
+    
+
+
+def has_to_click_to_install(serial_nr):
+    vc = ViewClient(*ViewClient.connectToDeviceOrExit(serialno=serial_nr))
+    try:
+        vc.findViewByIdOrRaise('com.google.securitycenter:id/name')
+    except:
+        try:
+            vc.findViewByIdOrRaise('com.miui.securitycenter:id/name')
+        except:
+            return False
+    return True
+
+
+def click_to_install(serial_nr):
+    vc = ViewClient(*ViewClient.connectToDeviceOrExit(serialno=serial_nr))
+    res = vc.findViewByIdOrRaise('android:id/button2')
+    res.touch()
+
+
+def background_installer():
+    serial_nr = get_device_serial()
+    print(f"serial: {serial_nr}")
+    time.sleep(2)
+    if has_to_click_to_install(serial_nr):
+        click_to_install(serial_nr)
+
+
+def get_device_serial():
+    res, o, e = execute_shell_command("adb devices | awk 'NR==2 {print $1}'")
+    return o.decode("utf-8", errors='replace').strip()
+
 
 def execute_shell_command(cmd, args=[], timeout=None):
     command = cmd + " " + " ".join(args) if len(args) > 0 else cmd
@@ -51,16 +122,20 @@ def execute_shell_command(cmd, args=[], timeout=None):
 
 def measure(args_obj):
     #arch -x86_64 python anadroid/main.py -t Custom -cmd "ls -al; sleep 30"'
-    cmd_prefix = f'arch -x86_64 pyanadroid -run -t Custom --n_times {args_obj.n_times}  -cmd'
+    cmd_prefix = f'arch -x86_64 pyanadroid -run -t Custom --n_times {args_obj.n_test_times}  -cmd'
     #print(args_obj.n_times)
     #for i in range(0, args_obj.n_times):
     cmd = f'{cmd_prefix} \"{build_exec_cmd(args_obj)}\"'
-    print(f"ai vai o cmd {cmd}")
+    print(f"performing command: {cmd}")
+    start=time.time()
     res, o , e = execute_shell_command(cmd)
+    print(f"elapsed time: {time.time() - start} secs")
     print(res)
-    print(o)
-    print(e)
+    #print(o)
+    #print(e)
     if res != 0:
+        print(o)
+        print(e)
         raise Exception(f"Error while running cmd {CMD}")
     '''else:
         res_files0 = list(filter(lambda x: '0' in x, fetch_res_files(results_dir="anadroid_results/custom_test_results")))
@@ -70,7 +145,7 @@ def measure(args_obj):
 
 
 def fetch_res_files(results_dir=""):
-    return [os.path.join(results_dir, x) for x in os.listdir(results_dir) if 'manafa_res' in x]
+    return [os.path.join(results_dir, x) for x in os.listdir(results_dir) if 'manafa_res' in x or '.logcat' in x ]
 
 
 def parse_json(filepath):
@@ -82,7 +157,7 @@ def parse_json(filepath):
 def extract_values_from_files(files):
     rm_val = " " #"MeasureSymmetricTest_test_"
     function_dict = {}
-    jsons = [parse_json(x) for x in files]
+    jsons = [parse_json(x) for x in files if '.json' in x]
     for j_file in jsons:
         #print(json.dumps(j_file['invoked_methods'], indent=1))
         for method, invs in j_file['invoked_methods'].items():
@@ -117,7 +192,6 @@ def gen_box_plot(key_list, list_of_lists, title="ai"):
     for bplot in bp_dict['boxes']:
         i = i + 1
         bplot.set_facecolor(colors[i % len(colors)])
-
     xtickNames = plt.setp(en_box, xticklabels=key_list)
     plt.setp(xtickNames, rotation=90, fontsize=5)
     plt.suptitle(title)
@@ -137,19 +211,41 @@ def plot_res(res):
 def build_apks(args_obj):
     print("building")
     res, o , e = execute_shell_command(build_build_cmd(args_obj))
-    print(res)
-    print(o)
+    if res == 1:
+        print(res)
+        print(o)
+        print(e)
+        print("build failed. Interrupting procedure")
+        exit(-1)
+    #print(o)
 
-def install_apks(build_type="debug"):
-    print("installing apks")
-    res, o , e = execute_shell_command(f"adb install -g -r app/build/outputs/apk/{build_type.lower()}/app-{build_type.lower()}*")
-    print(res)
-    print(o)
-    print(e)
+def install_apks(build_type="debug", accept_install=False, retry=True, install_main=True, install_test=True):
+    if install_main:
+        if accept_install:
+            unlocked = is_screen_unlocked()
+            if not unlocked:
+                unlock_screen()
+            thread1 = threading.Thread(target=background_installer)
+            thread1.start()
+        print("installing main apk")
+        res, o , e = execute_shell_command(f"adb install -g -r app/build/outputs/apk/{build_type.lower()}/app-{build_type.lower()}*")
+        print(res)
+        if res != 0 and retry:
+            install_apks(build_type, accept_install=True, retry=False)
+    if accept_install:
+        unlocked = is_screen_unlocked()
+        if not unlocked:
+            unlock_screen()
+        thread2 = threading.Thread(target=background_installer)
+        thread2.start()
+    print("installing test apk")
     res, o , e = execute_shell_command(f"adb install -g -r app/build/outputs/apk/androidTest/{build_type.lower()}/app-{build_type.lower()}*")
     print(res)
-    print(o)
-    print(e)
+    if res != 0 and retry:
+        install_apks(build_type, accept_install=True, retry=False, install_main=False)
+    #print(o)
+    #print(o)
+    #print(e)
     
 
 def uninstall_apks(args_obj):
@@ -159,7 +255,9 @@ def uninstall_apks(args_obj):
 
 
 def gen_run_id(args_obj):
-    return f'{args_obj.test_class}_{args_obj.provider}_{args_obj.algorithm}_{args_obj.key_len}_{args_obj.input_size}_{args_obj.algorithm_mode + args_obj.padding}'
+    _ , device_name, _ = execute_shell_command("adb shell getprop ro.product.model")
+    device_name = device_name.decode('utf-8').strip().replace(" ", "")
+    return f'{device_name}_{args_obj.test_class}_{args_obj.provider}_{args_obj.algorithm}_{args_obj.key_len}_{args_obj.input_size}_{args_obj.algorithm_mode + args_obj.padding}_{args_obj.keyspec}'
 
 
 def save_res_in_id_folder(run_id, file_list):
@@ -169,13 +267,32 @@ def save_res_in_id_folder(run_id, file_list):
     for f in file_list:
         shutil.copy(f, os.path.join(run_id, os.path.basename(f)))
 
+def check_installation():
+    _, o, _ = execute_shell_command("adb shell pm list packages | grep benchmark")
+    #print(o)
+    if len(str(o).split('package')) <= 2:
+        raise Exception("APKs were not installed.")
+
+def get_battery_level():
+    x = execute_shell_command("pyanadroid --device get_battery_level")
+    return int(x[1].strip())
+
 
 def main(args_obj):
     if args_obj.build: 
         build_apks(args_obj)
     if args_obj.install:
-        install_apks(args_obj.build_type)
+        try:
+            execute_shell_command("pyanadroid --device unlock_screen")
+            install_apks(args_obj.build_type)
+            check_installation()
+        except Exception:
+            install_apks(args_obj.build_type)
+            check_installation()
     measure(args_obj)
+    if get_battery_level() <= LOW_BATTERY_LEVEL:
+        print("low battery")
+        exit(0)
     files = fetch_res_files(results_dir="anadroid_results/custom_test_results")
     print(files)
     fc = extract_values_from_files(files)
@@ -196,7 +313,7 @@ def build_exec_cmd(args_obj):
 
 def build_build_cmd(args_obj):
     prop_keys = get_keys_of_prop_file()
-    prop_fmt_keys = list(filter(lambda x: x.upper() in prop_keys or x != 'n_times', args_obj.__dict__.keys()))
+    prop_fmt_keys = list(filter(lambda x: x.upper() in prop_keys, args_obj.__dict__.keys()))
     res = " ".join([f"-P{k.upper()}={args_obj.__dict__[k]}" for k in prop_fmt_keys])
     cmd = f"./gradlew assemble{args_obj.build_type} assembleAndroidTest {res} -DtestBuildType={args_obj.build_type.lower()}"
     print(f"build command: {cmd}")
@@ -212,8 +329,7 @@ def fetch_from_gradle_prop_file(key, default_val):
                     if k == key and v != '':
                         return v
                 except:
-                    continue
-               
+                    continue   
         # If no matching key is found, return the default value
         return default_val
 
@@ -233,23 +349,24 @@ def get_keys_of_prop_file():
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("-b", "--build", help="build", action='store_true', default=False)
+    parser.add_argument("-b", "--build", help="build", action='store_true', default=True)
     parser.add_argument("-bt", "--build_type", help="build type", type=str, choices=['Debug', 'Release'], default="Release")
     parser.add_argument("-i", "--install", help="install apks", action='store_true', default=False)
     parser.add_argument("-u", "--uninstall", help="uninstall apks", action='store_true', default=False)
     parser.add_argument("-p", "--plot", help="plot results", action='store_true', default=False)
-    parser.add_argument("-c", "--test_class", help="test class", default="DigestTest", choices=["MeasureDigestTest",
-    "MeasureHMACTest", "MeasureSymmetricTest", "MeasureSymmetricDecryptTest"])
-    parser.add_argument("-r", "--test_runner", help="unit test runner", default="android.support.test.runner.AndroidJUnitRunner", choices=["android.support.test.runner.AndroidJUnitRunner", "androidx.test.runner.AndroidJUnitRunner"])
+    parser.add_argument("-c", "--test_class", help="test class", default="DigestTest", type=str)
+    parser.add_argument("-r", "--test_runner", help="unit test runner", default="androidx.test.runner.AndroidJUnitRunner", choices=["android.support.test.runner.AndroidJUnitRunner", "androidx.test.runner.AndroidJUnitRunner", "androidx.test.ext.junit.runners.AndroidJUnit4"])
     parser.add_argument("-tp", "--test_package", help="test package",  default="com.example.cryptobenchmark.test")
-    parser.add_argument("-nt", "--n_times", help="times to repeat each execution",  default=1, type=int)
+    parser.add_argument("-ntt", "--n_test_times", help="times to repeat each test execution",  default=1, type=int)
+    parser.add_argument("-nt", "--n_times", help="times to repeat each algorithm execution",  default=1, type=int)
     parser.add_argument("-s", "--sleep_time", help="time to sleep betweeen each execution",  default=3, type=int)
     parser.add_argument("-pv", "--provider", help="crypto provider", default=fetch_from_gradle_prop_file("PROVIDER", "AndroidOpenSSL"), type=str)
     parser.add_argument("-is", "--input_size", help="input size",  default=fetch_from_gradle_prop_file("INPUT_SIZE", 128), type=int)
     parser.add_argument("-kl", "--key_len", help="key length",  default=fetch_from_gradle_prop_file("KEY_LEN", 128), type=int)
     parser.add_argument("-a", "--algorithm", help="algorithm to execute",  default=fetch_from_gradle_prop_file("ALGORITHM", ""), type=str)
     parser.add_argument("-m", "--algorithm_mode", help="algorithm mode",  default=fetch_from_gradle_prop_file("MODE", ""), type=str)
-    parser.add_argument("-padding", "--padding", help="algorithm padding",  default=fetch_from_gradle_prop_file("PADDING", ""), type=str)
+    parser.add_argument("-pd", "--padding", help="algorithm padding",  default=fetch_from_gradle_prop_file("PADDING", ""), type=str)
+    parser.add_argument("-ks", "--keyspec", help="keyspec",  default=fetch_from_gradle_prop_file("WITH_KEY_SPEC", 0), type=int)
     args = parser.parse_args()
     print(args.__dict__)
     main(args_obj=args)

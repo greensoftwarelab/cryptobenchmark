@@ -10,7 +10,8 @@ android {
         versionCode 1
         versionName "1.0"
         multiDexEnabled true
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        //testInstrumentationRunner 'androidx.test.ext.junit.runners.AndroidJUnit4'
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         buildConfigField "String", "KEY_LEN", "\"$KEY_LEN\""
         buildConfigField "String", "INPUT_SIZE", "\"$INPUT_SIZE\""
         buildConfigField "String", "N_TIMES", "\"$N_TIMES\""
@@ -20,6 +21,7 @@ android {
         buildConfigField "String", "MODE", "\"$MODE\""
         buildConfigField "String", "COOL_DOWN_TIME", "\"$COOL_DOWN_TIME\""
         buildConfigField "String", "WARM_UP_TIME", "\"$WARM_UP_TIME\""
+        buildConfigField "String", "WITH_KEY_SPEC", "\"$WITH_KEY_SPEC\""
 
     }
     testBuildType System.getProperty('testBuildType', 'debug')
@@ -57,14 +59,16 @@ android {
 }
 
 dependencies {
-    implementation 'io.github.raphael28:hunter-debug-library:1.0.1'
-    //implementation 'io.github.greensoftwarelab:hunter-emanafa-library:1.0.1'
-    implementation 'com.android.support:appcompat-v7:27.1.1'
-    implementation 'com.android.support:design:27.1.1'
-    testImplementation 'junit:junit:4+'
+    //implementation 'io.github.raphael28:hunter-debug-library:1.0.1'
+    implementation 'io.github.greensoftwarelab:hunter-emanafa-library:1.0.1'
+    //testImplementation 'junit:junit:4.12'
     testImplementation("org.json:json:20210307")
     //testImplementation 'org.robolectric:robolectric:4.6.1'
-    androidTestImplementation 'io.github.raphael28:hunter-debug-library:1.0.1'
-    androidTestImplementation 'com.android.support.test:runner:1.0.2'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.3'
+    //androidTestImplementation 'io.github.raphael28:hunter-debug-library:1.0.1'
+    androidTestImplementation 'io.github.greensoftwarelab:hunter-emanafa-library:1.0.1'
+    //androidTestImplementation 'com.android.support.test:runner:1.0.2'
+    //androidTestImplementation 'junit:junit:4.12'
+    //androidTestImplementation 'androidx.test.ext:junit:1.1.3'
+    androidTestImplementation("androidx.test:runner:1.2.0")
+
 }
