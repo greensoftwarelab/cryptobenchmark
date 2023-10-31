@@ -69,16 +69,24 @@ public class MeasureSignTest extends MeasureTest{
 
     
     @Test
-@HunterDebug
+    @HunterDebug
     public void test_sign_SHA1WithRSA_AndroidOpenSSL() throws Exception {
         String algo = "SHA1WithRSA", mode = "", padding = "", provider = "AndroidOpenSSL";
         SignOperation sop = Sign::sign;
         sign(sop, algo, KEY_PAIR.getPrivate(), provider);
     }
 
+    @Test
+    @HunterDebug
+    public void test_sign_SHA224WithRSA_AndroidOpenSSL() throws Exception {
+        String algo = "SHA224WithRSA", mode = "", padding = "", provider = "AndroidOpenSSL";
+        SignOperation sop = Sign::sign;
+        sign(sop, algo, KEY_PAIR.getPrivate(), provider);
+    }
+
     
     @Test
-@HunterDebug
+    @HunterDebug
     public void test_sign_SHA256WithRSA_AndroidOpenSSL() throws Exception {
         String algo = "SHA256WithRSA", mode = "", padding = "", provider = "AndroidOpenSSL";
         SignOperation sop = Sign::sign;
@@ -112,18 +120,24 @@ public class MeasureSignTest extends MeasureTest{
         sign(sop, algo, KEY_PAIR.getPrivate(), provider);
     }
 
+    @Test
+    @HunterDebug
+    public void test_sign_SHA224WithRSA_BC() throws Exception {
+        String algo = "SHA224WithRSA", mode = "", padding = "", provider = "BC";
+        SignOperation sop = Sign::sign;
+        sign(sop, algo, KEY_PAIR.getPrivate(), provider);
+    }
     
     @Test
-@HunterDebug
+    @HunterDebug
     public void test_sign_SHA256WithRSA_BC() throws Exception {
         String algo = "SHA256WithRSA", mode = "", padding = "", provider = "BC";
         SignOperation sop = Sign::sign;
         sign(sop, algo, KEY_PAIR.getPrivate(), provider);
     }
 
-    
     @Test
-@HunterDebug
+    @HunterDebug
     public void test_sign_SHA384WithRSA_BC() throws Exception {
         String algo = "SHA384WithRSA", mode = "", padding = "", provider = "BC";
         SignOperation sop = Sign::sign;
@@ -150,9 +164,17 @@ public class MeasureSignTest extends MeasureTest{
         sign(sop, algo, KEY_PAIR.getPrivate(), PROVIDER);
     }
 
+    @Test
+    @HunterDebug
+    public void test_sign_SHA224WithRSA() throws Exception {
+        String algo = "SHA224WithRSA", mode = "", padding = "";
+        SignOperation sop = Sign::sign;
+        sign(sop, algo, KEY_PAIR.getPrivate(), PROVIDER);
+    }
+
+
     
     @Test
-@HunterDebug
     public void test_sign_SHA256WithRSA() throws Exception {
         String algo = "SHA256WithRSA", mode = "", padding = "";
         SignOperation sop = Sign::sign;
@@ -161,7 +183,7 @@ public class MeasureSignTest extends MeasureTest{
 
     
     @Test
-@HunterDebug
+    @HunterDebug
     public void test_sign_SHA384WithRSA() throws Exception {
         String algo = "SHA384WithRSA", mode = "", padding = "";
         SignOperation sop = Sign::sign;
@@ -222,7 +244,7 @@ public class MeasureSignTest extends MeasureTest{
 
     
     @Test
-@HunterDebug
+    @HunterDebug
     public void test_sign_SHA384WithDSA_BC() throws Exception {
         String algo = "SHA384WithDSA", mode = "", padding = "", provider = "BC";
         SignOperation sop = Sign::sign;
@@ -247,9 +269,16 @@ public class MeasureSignTest extends MeasureTest{
         sign(sop, algo, KEY_PAIR.getPrivate(), provider);
     }
 
+    @Test
+    @HunterDebug
+    public void test_sign_SHA224WithDSA_AndroidOpenSSL() throws Exception {
+        String algo = "SHA224WithDSA", mode = "", padding = "", provider = "AndroidOpenSSL";
+        SignOperation sop = Sign::sign;
+        sign(sop, algo, KEY_PAIR.getPrivate(), provider);
+    }
     
     @Test
-@HunterDebug
+    @HunterDebug
     public void test_sign_SHA256WithDSA_AndroidOpenSSL() throws Exception {
         String algo = "SHA256WithDSA", mode = "", padding = "", provider = "AndroidOpenSSL";
         SignOperation sop = Sign::sign;
@@ -258,7 +287,7 @@ public class MeasureSignTest extends MeasureTest{
 
     
     @Test
-@HunterDebug
+    @HunterDebug
     public void test_sign_SHA384WithDSA_AndroidOpenSSL() throws Exception {
         String algo = "SHA384WithDSA", mode = "", padding = "", provider = "AndroidOpenSSL";
         SignOperation sop = Sign::sign;
@@ -267,7 +296,6 @@ public class MeasureSignTest extends MeasureTest{
 
     
     @Test
-@HunterDebug
     public void test_sign_SHA512WithDSA_AndroidOpenSSL() throws Exception {
         String algo = "SHA512WithDSA", mode = "", padding = "", provider = "AndroidOpenSSL";
         SignOperation sop = Sign::sign;
@@ -277,16 +305,25 @@ public class MeasureSignTest extends MeasureTest{
 
     
     @Test
-@HunterDebug
+    @HunterDebug
     public void test_sign_SHA1WithDSA() throws Exception {
         String algo = "SHA1WithDSA", mode = "", padding = "", provider = "AndroidOpenSSL";
         SignOperation sop = Sign::sign;
         sign(sop, algo, KEY_PAIR.getPrivate(), PROVIDER);
     }
 
+    @Test
+    @HunterDebug
+    public void test_sign_SHA224WithDSA() throws Exception {
+        String algo = "SHA224WithDSA", mode = "", padding = "", provider = "AndroidOpenSSL";
+        SignOperation sop = Sign::sign;
+        sign(sop, algo, KEY_PAIR.getPrivate(), PROVIDER);
+    }
+
+
     
     @Test
-@HunterDebug
+    @HunterDebug
     public void test_sign_SHA256WithDSA() throws Exception {
         String algo = "SHA256WithDSA", mode = "", padding = "", provider = "AndroidOpenSSL";
         SignOperation sop = Sign::sign;

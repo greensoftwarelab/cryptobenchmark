@@ -34,7 +34,6 @@ public class MeasureSignVerifyTest extends MeasureTest{
     }
 
     @Test
-@HunterDebug
     public void test_dummy(){
         DeviceCryptoPrimitives dcp = new DeviceCryptoPrimitives();
         System.out.println(dcp);

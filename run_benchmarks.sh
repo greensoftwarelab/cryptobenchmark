@@ -1,8 +1,8 @@
 # !/bin/bash
 
 INPUT_SIZES=(256 512 1024) # 256 160 1024 118724  4086 81920
-N_TIMES=500  #times each algo is repeated (size of input list)
-N_TEST_TIMES=5 # times each test case is repeated (N) in  _N_ * (size of input list)
+N_TIMES=50  #times each algo is repeated (size of input list)
+N_TEST_TIMES=2 # times each test case is repeated (N) in  _N_ * (size of input list)
 SLEEP_TIME=1
 
 PROVIDERS=(AndroidOpenSSL BC AndroidKeyStoreBCWorkaround AndroidKeyStore )
@@ -11,8 +11,8 @@ MAC_KEY_LEN=(8 16 32 64 )
 
 SYM_ALGOS=( AES CHACHA20 BLOWFISH ARC4 DES 3DES )
 SYM_MODES=( ECB ) # CBC CTR GCM OFB GCM-SIV )
-SYM_PADD=( NoPadding PKCS5PADDING ) #PKCS7PADDING )
-SYM_KEY_LEN=(256)
+SYM_PADD=( NoPadding PKCS5PADDING PKCS7PADDING )
+SYM_KEY_LEN=(40 56 128 168 192 256)
 
 ASSYM_PROVIDERS=(AndroidOpenSSL AndroidKeyStoreBCWorkaround BC)
 ASSYM_INPUT_SIZES=(116 244 372)
@@ -23,8 +23,9 @@ ASSYM_KEYSPEC=( 0 1 )
 ASSYM_KEY_LEN=(1024 2048 4096)
 
 SIGN_KEY_LEN=(1024 2048 4096)
-SIGN_ALGOS=(RSA DSA)
-
+SIGN_ALGOS=(RSA DSA) # necessary for keygen
+#SIGN_PADDS=( NOPADDING )
+SIGN_PROVIDERS=(AndroidOpenSSL AndroidKeyStoreBCWorkaround BC)
 
 
 function testDigest(){
@@ -47,28 +48,28 @@ function testMAC(){
 }
 
 function testSign(){
-    #for algo in ${SIGN_ALGOS[@]}; do
-        #for pv in ${PROVIDERS[@]}; do
+    for algo in ${SIGN_ALGOS[@]}; do
+        for pv in ${SIGN_PROVIDERS[@]}; do
             for is in ${INPUT_SIZES[@]}; do
                 for keylen in  ${SIGN_KEY_LEN[@]}; do
-                    python3 benchmark.py -b -i -u -c MeasureSignTest -nt $N_TIMES --n_test_times $N_TEST_TIMES -s $SLEEP_TIME -is $is -kl $keylen  
+                    python3 benchmark.py -b -i -u -c MeasureSignTest -nt $N_TIMES --n_test_times $N_TEST_TIMES -s $SLEEP_TIME -is $is -kl $keylen  -a $algo -pv $pv -pd "" -m ""
                 done
             done
-        #done
-    #done
+        done
+    done
 }
 
 
 function testSignAndVerify(){
-    #for algo in ${SIGN_ALGOS[@]}; do
-        #for pv in ${PROVIDERS[@]}; do
+    for algo in ${SIGN_ALGOS[@]}; do
+        for pv in ${PROVIDERS[@]}; do
             for is in ${INPUT_SIZES[@]}; do
                 for keylen in  ${SIGN_KEY_LEN[@]}; do
-                    python3 benchmark.py -b -i -u -c MeasureSignVerifyTest -nt $N_TIMES --n_test_times $N_TEST_TIMES -s $SLEEP_TIME -is $is -kl $keylen  
+                    python3 benchmark.py -b -i -u -c MeasureSignVerifyTest -nt $N_TIMES --n_test_times $N_TEST_TIMES -s $SLEEP_TIME -is $is -kl $keylen -a $algo -pv $pv  -pd "" -m ""
                 done
             done
-        #done
-    #done
+        done
+    done
 }
 
 
@@ -213,11 +214,11 @@ function testAssymm(){
 # test sign
 #testSign
 
-testSymEncrypt
+#testSymEncrypt
 
 #testAssymmEncrypt
 
-#testSignAndVerify
+testSignAndVerify
 
 x='''
 testSymEncrypt

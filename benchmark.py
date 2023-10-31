@@ -7,11 +7,13 @@ import argparse
 import re
 import threading
 from com.dtmilano.android.viewclient import ViewClient
+from termcolor import colored
+
 
 #CMD="adb shell am instrument -w -m  -e debug false -e class 'com.example.cryptobenchmark.MeasureDigestTest' com.example.cryptobenchmark.test/android.support.test.runner.AndroidJUnitRunner"
 CMD="adb shell am instrument -w -m -e debug false -e class 'com.example.cryptobenchmark.{test_class}' {test_package}/{test_runner}"
 
-LOW_BATTERY_LEVEL=5
+LOW_BATTERY_LEVEL=31
 
 
 def is_screen_dreaming():
@@ -145,7 +147,7 @@ def measure(args_obj):
 
 
 def fetch_res_files(results_dir=""):
-    return [os.path.join(results_dir, x) for x in os.listdir(results_dir) if 'manafa_res' in x or '.logcat' in x ]
+    return [os.path.join(results_dir, x) for x in os.listdir(results_dir) if 'manafa_res' in x or '.logcat' in x or '_state' ]
 
 
 def parse_json(filepath):
@@ -215,7 +217,7 @@ def build_apks(args_obj):
         print(res)
         print(o)
         print(e)
-        print("build failed. Interrupting procedure")
+        print(colored("build failed. Interrupting procedure",'red'))
         exit(-1)
     #print(o)
 
@@ -279,6 +281,9 @@ def get_battery_level():
 
 
 def main(args_obj):
+    if get_battery_level() <= LOW_BATTERY_LEVEL:
+        print(colored(f"low battery: {get_battery_level()}% . Aborting", 'red'))
+        exit(0)
     if args_obj.build: 
         build_apks(args_obj)
     if args_obj.install:
@@ -290,9 +295,6 @@ def main(args_obj):
             install_apks(args_obj.build_type)
             check_installation()
     measure(args_obj)
-    if get_battery_level() <= LOW_BATTERY_LEVEL:
-        print("low battery")
-        exit(0)
     files = fetch_res_files(results_dir="anadroid_results/custom_test_results")
     print(files)
     fc = extract_values_from_files(files)
