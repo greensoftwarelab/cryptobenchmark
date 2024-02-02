@@ -106,3 +106,39 @@ JCA/JCE is designed to separate cryptographic implementation from abstraction.
 No pixel 3a:
 - o AndroidOpenSSL tem sha2 fams
 - Nao tem bc digest 
+
+
+### Retirado da documentacao Android
+
+https://android-developers.googleblog.com/2018/03/cryptography-changes-in-android-p.html
+
+Starting in Android P, we plan to deprecate some functionality from the BC provider that's duplicated by the AndroidOpenSSL (also known as Conscrypt) provider. 
+
+To be clear, we aren't doing this because we are concerned about the security of the implementations from the BC provider, rather because having duplicated functionality imposes additional costs and risks while not providing much benefit.
+
+
+the Crypto provider was deprecated beginning in Android Nougat. Since then, any request for the Crypto provider by an application targeting API 23 (Marshmallow) or before would succeed, but requests by applications targeting API 24 (Nougat) or later would fail. In Android P, we plan to remove the Crypto provider entirely. Once removed, any call to SecureRandom.getInstance("SHA1PRNG", "Crypto") will throw NoSuchProviderException
+
+RSA with proper random encryption padding (like RSAES-OAEP) is believed to give IND-CPA and even IND-CCA2 confidentiality. But it has limited capacity: like 190-byte message for 256-byte cryptogram (using RSA-2048 and SHA-256). Above that limit, ECB can safely be used if one does not care about the large speed penalty (especially for decryption) and significant size penalty due to repeated use of RSAES-OAEP.
+RSA without random encryption padding (textbook RSA) is not secure. In particular, it allows to check a guess of the plaintext. Also, care must be taken that a plaintext block should be at least 1 bit less than than the public modulus is.
+
+None of the modes of operation used for symmetric block ciphers make RSA secure:
+ECB, CBC, PCBC all inherit the weakness of textbook RSA that a guess of a plaintext block can be trivially verified by re-performing the encryption of that block (which requires the public key only), and comparing with the actual ciphertext block.
+CTR, CFB and OFB are totally insecure. Anyone can trivially decipher, since decryption uses the block cipher in encryption mode only.
+
+
+
+Most new Android devices have hardware support for AES via the ARMv8 Cryptography Extensions. 
+
+In order to offer low cost options, device manufacturers sometimes use low-end processors such as the ARM Cortex-A7, which does not have hardware support for AES. On these devices, AES is so slow that it would result in a poor user experience; 
+
+
+https://security.googleblog.com/2019/02/introducing-adiantum-encryption-for.html
+
+Generic and ARM-optimized implementations of Adiantum are available in the Android common kernels v4.9 and higher, and in the mainline Linux kernel v5.0 and higher. Reference code, test vectors, and a benchmarking suite are available at https://github.com/google/adiantum.
+
+Where hardware support for AES exists, AES is faster than Adiantum; 
+
+
+https://android-developers.googleblog.com/2019/05/queue-hardening-enhancements.html
+
