@@ -9,8 +9,37 @@ This project started with a failed attempt to make an elegant library that would
 
 ## Installation
 
-### Pythonic Stuff
 
+Install pyenv
+```
+$ curl https://pyenv.run | bash
+$ exec $SHELL
+```
+Install virtual virtualenv environment  (via python-pip):
+
+```
+$ python -m pip install --user virtualenv
+```
+
+Download the exact same version of python used for dev (assuming 3.8.2):
+
+```
+$ pyenv install 3.8.2
+```
+
+Replicate locally the dev virtualenv
+
+```
+$ cd generic_crypto_bot
+$ virtualenv -p ~/.pyenv/versions/3.8.2/bin/python3.8 env/
+```
+
+Activate the virtual environment
+```
+$ source venv/bin/activate
+```
+
+Install python packages
 '''
 $ pip install -r requirements.txt
 '''
