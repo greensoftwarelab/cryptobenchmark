@@ -143,7 +143,10 @@ def plot_res(unsorted_res, test_type=""):
     gen_box_plot(keys, consumptions, f"{test_type} - Energy")
 
 def plot_execs(execs):
-    test_types = set(map(lambda x: x.split("/")[-1].split("_")[1], execs))
+    if len(execs) == 0:
+        return
+    print(execs)
+    test_types = set(map(lambda x: x.split("/")[-1].split("_")[1], execs)) if len(execs) > 1 else [execs[0].split("_")[1]]
     print(f"{len(test_types)} test types: {test_types}")
     for test_type in test_types:
         files = []
@@ -153,12 +156,15 @@ def plot_execs(execs):
         plot_res(fc, extract_type_from_testclassname(test_type))
     
 def main(basedir, device, provider, algorithm, primitive):
+    bdir = '.' if basedir is None else basedir
     good_execs = []
-    list_of_runs = [ os.path.join(basedir, x) for x in os.listdir(basedir) if 'Measure' in x and os.path.isdir(os.path.join(basedir, x)) ]
+    list_of_runs = [ os.path.join(bdir, x) for x in os.listdir(bdir) if 'Measure' in x and os.path.isdir(os.path.join(bdir, x)) ] if not 'Measure' in bdir else [bdir]
+    print(list_of_runs)
     list_of_runs = filter(lambda x: primitive in x and device in x and provider in x and algorithm in x, list_of_runs)
     for run_dir in list_of_runs:
         if process_config_folder(run_dir):
             good_execs.append(run_dir) 
+    print("good execs")
     print(good_execs)
     plot_execs(good_execs)
 

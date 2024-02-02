@@ -19,7 +19,6 @@ import static com.example.cryptobenchmark.misc.Utils.StringToByteArray;
 
 public class Verify extends PrimitiveStore {
 
-
     public Verify() {
         super();
     }

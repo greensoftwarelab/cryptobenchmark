@@ -206,7 +206,8 @@ public class MeasureTest {
 
     public static String[] gen_random_workload(int size, int times){
         String[] res = new String[times];
-        int max_times  = times % (STACK_SIZE_LIM / size ) ;
+        int max_times  = times % (STACK_SIZE_LIM / size );
+        System.out.println("max_times: " + max_times + " size: " + size + " times: " + times + " STACK_SIZE_LIM: " + STACK_SIZE_LIM + "");
         DataType[] dt = StringType.genRandomWithSize(size, max_times);
         for (int i = 0; i < dt.length; i++) {
             res[i] = ((String) dt[i].getValue());
